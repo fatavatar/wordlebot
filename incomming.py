@@ -16,9 +16,15 @@ client = Client(account_sid, auth_token)
 app = Flask(__name__)
 q = Queue()
 
+@app.route("/test", methods=['GET', 'POST'])
+def test():
+    print("BOO")
+    return "HEYOO"
+
 @app.route("/sms", methods=['GET', 'POST'])
 def sms_reply():
         
+    print("HERE")
     """Respond to incoming calls with a simple text message."""
     # Start our TwiML response
     resp = MessagingResponse()
@@ -139,8 +145,7 @@ def startTournament(wordle, days):
 
 if __name__ == "__main__":
     storage.setup()
-    #startTournament(590, 5)
     t1 = Thread(target=updateThread)
     t1.start()
 
-    app.run(debug=True)
+    app.run(host="0.0.0.0",debug=True)
