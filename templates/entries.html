@@ -1,5 +1,12 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>{% block title %} Welcome to FlaskBlog {% endblock %}</h1>
+    <h1>Entries</h1>
+    <table style="width:80%">
+      <tr><th>Wordle</th><th>Player</th><th>Missed</th><th>Score</th></tr>  
+      {% for entry in entries %}
+        {% set miss = "X" if entry.failure else ""  %}
+        <tr><td>{{ entry.wordle }}</td><td>{{ entry.user.name }}</td><td>{{ miss }}</td><td>{{ entry.guess_count }}</td></tr>
+      {% endfor %}
+    </table>
 {% endblock %}

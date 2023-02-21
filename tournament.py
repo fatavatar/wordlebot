@@ -1,4 +1,5 @@
 import logging
+import time
 import storage
 import sys
 import messenger
@@ -143,7 +144,7 @@ class Standings:
             index=0
             added = False
             for item in sorted:
-                if total.rank <= item.rank:
+                if total.place <= item.place:
                     sorted.insert(index, total)
                     added = True
                     break
@@ -252,7 +253,7 @@ class Tournament:
         for user in self.users:
             if user.id != score.user.id:
                 message = score.user.name + " has entered their score"
-                if score.flavor_text is not None:
+                if score.flavor_text is not None and len(score.flavor_text) > 0:
                     message = message + "\nThey said: " + score.flavor_text
                 messenger.sendMessage(user.number, message)
         self.entries = Entry.getEntries(self.id)
@@ -343,7 +344,8 @@ def main():
         wordle=sys.argv[3]
 
         logger.debug("Starting tournament")
-        if Tournament.startTournament(wordle, number):    
+        if Tournament.startTournament(wordle, number):  
+            time.sleep(10)  
             logger.debug("Success!")
 
         else:

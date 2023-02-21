@@ -1,3 +1,5 @@
+import os
+import sys
 from flask import Flask, request, render_template
 from twilio.twiml.messaging_response import MessagingResponse
 import json
@@ -14,7 +16,13 @@ def test():
 
 @app.route("/entries/", methods=['GET','POST'])
 def entries():
-    return render_template('entries.html')
+    tournament = Tournament.getCurrentTournament()
+    
+    
+    
+    entries = filter(lambda entry: entry.processed == True, tournament.entries)
+
+    return render_template('entries.html', entries=entries)
 
 @app.route("/sms", methods=['GET', 'POST'])
 def sms_reply():
@@ -65,7 +73,7 @@ def sms_reply():
     elif results.guess_count == 2:
         message = "2? You lucky summbitch."
     elif results.guess_count == 3:
-        nessage = "Good job on your 3."
+        message = "Good job on your 3."
     elif results.guess_count == 4:
         message = "4 - Decidedly below average."
     elif results.guess_count == 5:
@@ -83,6 +91,16 @@ if __name__ == "__main__":
     logger = logging.getLogger("WordleBot")
     formatter = logging.Formatter('[%(levelname)s] %(message)s')
     handler = logging.StreamHandler()
+    try:
+        prod = os.environ['PRODUCTION']
+        if prod == "1":
+            prod = True
+    except Exception as e:
+        prod = False    
+
+    if prod:
+        handler = logging.StreamHandler(sys.stdout)
+        
     handler.setFormatter(formatter)
 
     logger.setLevel(logging.DEBUG)

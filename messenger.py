@@ -5,6 +5,8 @@ from threading import Thread
 from twilio.rest import Client 
 import atexit
 
+logger = logging.getLogger("WordleBot")
+
 account_sid = os.environ['TWILIO_ACCOUNT_SID']
 auth_token = os.environ['TWILIO_AUTH_TOKEN']
 from_number = os.environ['TWILIO_FROM_NUMBER']
@@ -15,8 +17,8 @@ try:
         real_send = True
 except Exception as e:
     real_send = False
+logger.debug("Production = " + str(real_send))
 
-client = Client(account_sid, auth_token)
 
 q = Queue()
 t1 = None
@@ -34,6 +36,8 @@ def startMessageQueue():
 
 
 def updateThread():
+    client = Client(account_sid, auth_token)
+
     while True:
         number,message = q.get()
         logger.debug("Got Queue item")
@@ -41,8 +45,7 @@ def updateThread():
             break
         if real_send:
             logger.debug("Sending real message")
-            client.messages \
-                        .create(
+            client.messages.create(
                             body=message,
                             from_=from_number,
                             to=number
@@ -60,7 +63,6 @@ def shutdown():
         t1.join()
         t1 = None
 
-logger = logging.getLogger("WordleBot")
 
 
 atexit.register(shutdown)
