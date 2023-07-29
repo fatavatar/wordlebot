@@ -2,6 +2,7 @@ import logging
 import os
 from queue import Queue
 from threading import Thread
+from time import sleep
 from twilio.rest import Client 
 import atexit
 
@@ -50,6 +51,7 @@ def updateThread():
                             from_=from_number,
                             to=number
                         )
+            sleep(1)
         else:
             logger.debug("To: " + number + " - " + message)
         
