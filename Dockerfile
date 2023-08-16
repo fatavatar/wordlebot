@@ -1,4 +1,4 @@
-FROM python:alpine3.8
+FROM python:3.10
 
 ENV TWILIO_AUTH_TOKEN=token
 ENV TWILIO_ACCOUNT_SID=sid
@@ -12,4 +12,5 @@ RUN pip3 install -r requirements.txt
 
 COPY *.py .
 COPY templates templates
+COPY static static
 CMD ["python3", "-u", "incomming.py"]

@@ -3,7 +3,7 @@ import re
 from tournament import Entry
 
 
-def parse(user, body):
+def parse(user, body, comment = None):
     try:
         # Parse line by line
         lines = body.split("\n")
@@ -26,8 +26,11 @@ def parse(user, body):
             failure = False
         for x in range(rows):
             logger.debug(lines[2 + x])
+        
         flavor = ""
-        if len(lines) > rows+2:
+        if comment is not None:
+            flavor = comment
+        elif len(lines) > rows+2:
             flavor='\n'.join(lines[rows+2:])
             if flavor.endswith('\n'):
                 flavor = flavor[:-1]

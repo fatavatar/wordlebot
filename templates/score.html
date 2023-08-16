@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+    <div style="text-align: center;margin-top:50px;">
+    
+    <h3>Scores for Wordle #{{ wordle.wordle }}</h3>
+        {% if wordle.hasprev %}
+        <a href="score?wordle={{ wordle.wordle - 1 }}">Previous</a>
+        {% if wordle.hasnext %} | {% endif %}
+        {% endif %}  
+        {% if wordle.hasnext %}
+        <a href="score?wordle={{ wordle.wordle + 1 }}">Next</a>  
+        {% endif %}
+    {% if wordle.done %}
+    
+    <div>
+        {% for entry in wordle.entries %}
+
+            {{ entry.user.name }}'s Score:<br>
+            <pre>{{ entry.guesses }}</pre>
+            {{ entry.flavor_text }}<br><br>
+
+        {% endfor %}
+        <pre>{{ wordle.standings|string }}</pre>
+    </div>
+    {% else %}
+
+    <div>
+        {% for entry in wordle.entries %}
+
+            {{ entry.user }} 
+            {% if entry.guesses is not None %}
+            has
+            {% else %}
+            hasn't
+            {% endif %}
+            submitted their score.<br>
+        {% endfor %}
+
+    </div>
+    {% endif %}
+
+{% endblock %}

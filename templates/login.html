@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <section class="web" style="text-align: center;margin-top: 50px;">
+        <h1>Welcome!</h1>
+
+        <p>Please install the app by doing the following:</p>
+        <p>Click the 'Share' button: <br><img width=150px src="{{ url_for('static', filename='images/share-iphone.png') }}" /><br>
+            <BR>Then select 'Add to home screen':<BR>
+        
+        <img width=250px src="{{ url_for('static', filename='images/addtohomescreen.png') }}" />
+        <BR><br>Then proceed to launch the shortcut installed to your homescreen.<br>
+        Thanks!
+        </p>
+    </section>
+
+    <section class="pwa" style="text-align: center;">
+        <h3>Select your user</h3><br>
+    <a href="login/Wes">Wes</a><br><br>
+    <a href="login/Andrew">Andrew</a><br><br>
+    <a href="login/Dave">Dave</a><br><br>
+    </section>
+
+    <script>
+        function showObjects(theclass) {
+            divs = document.getElementsByClassName(theclass);
+            for (x = 0; x < divs.length; x++) {
+                 divs[x].style.display = "block"
+            }
+        }
+
+        function hideObjects(theclass) {
+            divs = document.getElementsByClassName(theclass);
+            
+            for (x = 0; x < divs.length; x++) {
+                 divs[x].style.display = "none"
+            }
+        }
+
+        isInWebAppiOS = (window.navigator.standalone == true);
+        isInWebAppChrome = (window.matchMedia('(display-mode: standalone)').matches);
+
+        if (isInWebAppChrome) {
+            
+            hideObjects("ios");
+            hideObjects("web");
+            showObjects("pwa");
+        } else if (isInWebAppiOS) {
+            hideObjects("web");
+            showObjects("pwa");
+            showObjects("ios");
+        } else {
+            hideObjects("pwa");
+            hideObjects("ios");
+            showObjects("web");
+        }
+    </script>
+{% endblock %}

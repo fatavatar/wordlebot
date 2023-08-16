@@ -16,6 +16,10 @@ class User:
     @staticmethod
     def getUserByNumber(number):
         return User.__fromStorage(storage.getUserByNumber(number))
+    
+    @staticmethod
+    def getUserByName(name):
+        return User.__fromStorage(storage.getUserByName(name))
 
     @staticmethod
     def getUsers():
@@ -59,7 +63,7 @@ class Entry:
         self.guesses = guesses
         self.flavor_text = flavor_text
         self.processed = processed
-
+    
     def __str__(self):
         return "Entry: " + self.user + " - Wordle: " + self.wordle + " " + str(self.guess_count)
 
@@ -89,9 +93,10 @@ class Standings:
             else:
                 total.guesses = total.guesses + entry.guess_count
 
-    def processEntries(self, entries):
+    def processEntries(self, entries, wordle):
         for entry in entries:
-            self.__processEntry(entry)
+            if entry.wordle <= wordle:
+                self.__processEntry(entry)
         self.__calculate()        
 
     def processEntry(self, entry):
@@ -154,7 +159,16 @@ class Standings:
         return sorted
             
 
-    
+class Day:
+
+    def __init__(self, wordle, done, entries, standings, hasnext, hasprev):
+        self.id = id
+        self.wordle = wordle 
+        self.hasprev = hasprev
+        self.hasnext = hasnext
+        self.done = done
+        self.entries = entries
+        self.standings = standings
 
 class Tournament:
 
@@ -171,7 +185,7 @@ class Tournament:
         if storage_tournament is not None:
             return Tournament.__fromStorage(storage_tournament)
         return None
-
+    
     @staticmethod
     def startTournament(wordle, days):
         tournament = Tournament.getCurrentTournament()
@@ -185,10 +199,48 @@ class Tournament:
                 return True
         return False
 
-    def getStandings(self):
+    def getStandings(self, wordle = None):
+        if wordle is None:
+            wordle = self.__getCurrentWordle()
+
         totals = Standings(self.users)
-        totals.processEntries(self.entries)
+        totals.processEntries(self.entries, wordle)
         return totals
+    
+    
+
+    def __getCurrentWordle(self):
+        wordle = self.start_wordle
+        for entry in self.entries:
+            if entry.wordle > wordle:
+                wordle = entry.wordle
+        return wordle
+
+    def getLatestDay(self):
+        wordle = self.__getCurrentWordle()
+        return self.getDay(wordle)
+    
+    def getDay(self, wordle):
+        found_users = []
+        entries = []
+        done = False
+        for entry in self.entries:
+            if entry.wordle == wordle:
+                found_users.append(entry.user.id)
+                if entry.processed:
+                    done = True
+                entries.append(entry)
+                        
+        for user in self.users:
+            if user.id not in found_users:                
+                entries.append(Entry(user, wordle, None, False, "No Guesses Entered", None))
+        
+        standings = None
+        if done:
+            standings = self.getStandings(wordle)
+        return Day(wordle, done, entries, Results(self, standings), wordle < self.__getCurrentWordle(), wordle > self.start_wordle)
+    
+
         
     def closeDay(self, wordle):
         found_users = []
@@ -286,8 +338,9 @@ class Tournament:
                     messenger.sendMessage(user.number, body)
 
 class Results:
-    def __init__(self, tournament):
-        standings = tournament.getStandings()
+    def __init__(self, tournament, standings=None):
+        if standings is None:
+            standings = tournament.getStandings()
         self.standings = standings.getSorted()
 
         self.day = standings.last_wordle - tournament.start_wordle + 1

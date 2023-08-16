@@ -1,2 +1,4 @@
 twilio
 flask
+onesignal-python-api
+python-dotenv

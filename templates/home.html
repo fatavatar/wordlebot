@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+    <div style="text-align: center;margin-top:50px;">
+    
+    <h3>Hello {{ user }}!</h3>
+
+    <section class="pwa" style="margin-top:50px;">
+    <div class='onesignal-customlink-container'></div>
+    </section>
+
+    <section class="pwa" style="margin-top:50px;">
+        <p>Finally, install the shortcut. <br>
+        When installing the shortcut, enter your username exactly as: <pre>{{ user }}</pre></p>
+
+        <p>After installing the shortcut, when you share your wordle score (using the share button from your wordle results) a new option will be in the share sheet:<br>
+            <BR><BR><img width=250px src="{{ url_for('static', filename='images/sharesheet.png') }}" /><br><BR><BR>
+        You can exit the shortcuts app after it has been imported.  Use that to share your scores and enter comments (please accept permissions for always when submitting)</p>
+        Download the shortcut <a href="static/Submit Wordle.shortcut">HERE</a>.
+    </section>
+    </div>
+    <script>
+        function showObjects(theclass) {
+            divs = document.getElementsByClassName(theclass);
+            for (x = 0; x < divs.length; x++) {
+                 divs[x].style.display = "block"
+            }
+        }
+
+        function hideObjects(theclass) {
+            divs = document.getElementsByClassName(theclass);
+            
+            for (x = 0; x < divs.length; x++) {
+                 divs[x].style.display = "none"
+            }
+        }
+
+        isInWebAppiOS = (window.navigator.standalone == true);
+        isInWebAppChrome = (window.matchMedia('(display-mode: standalone)').matches);
+
+        if (isInWebAppChrome) {
+            
+            hideObjects("ios");
+            hideObjects("web");
+            showObjects("pwa");
+        } else if (isInWebAppiOS) {
+            hideObjects("web");
+            showObjects("pwa");
+            showObjects("ios");
+        } else {
+            hideObjects("pwa");
+            hideObjects("ios");
+            showObjects("web");
+        }
+
+        function pushSubscriptionChangeListener(event) {
+            if (event.current.token) {
+              //  const subscription  = OneSignal.User.PushSubscription;
+                console.log(event.current)
+                
+                if (event.current.optedIn) {
+                    OneSignalDeferred.push(function(OneSignal) {
+       
+                        setTimeout( function() { OneSignal.login("{{ user }}");; }, 2000);
+                        
+                    }
+                )} else {
+                    OneSignalDeferred.push(function(OneSignal) {
+       
+                        setTimeout( function() { OneSignal.logout();; }, 2000);
+                    })
+                }
+                
+            }
+        }       
+
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(function(OneSignal) {
+        OneSignal.User.PushSubscription.addEventListener("change", pushSubscriptionChangeListener);        
+        console.log(OneSignal.User.PushSubscription);
+    });
+    
+    </script>
+{% endblock %}

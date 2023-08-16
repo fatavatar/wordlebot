@@ -114,6 +114,17 @@ def addUser(name, phone_number):
         return False
 
 
+def getUserByName(username):
+    try:
+        with closing(sqlite3.connect(db_name)) as con, con,  \
+            closing(con.cursor()) as cur:
+            cur.execute("SELECT id, name, phone FROM user WHERE name = ?", (username,))
+            user_id, name, phone = cur.fetchone()
+            user = StorageUser(user_id, name, phone)
+            return user
+    except Exception as e:
+        return None
+
 def getUserByNumber(phone_number):
     try:
         with closing(sqlite3.connect(db_name)) as con, con,  \
@@ -173,6 +184,7 @@ def getEntries(tournament_id):
     except Exception as e:
         logger.debug("Error getting entries for tournament " + str(tournament_id) + ": " + str(e))
         return None
+    
 
 def setProcessed(wordle):      
     try:
