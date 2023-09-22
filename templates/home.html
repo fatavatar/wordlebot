@@ -7,80 +7,188 @@
     
     <h3>Hello {{ user }}!</h3>
 
-    <section class="pwa" style="margin-top:50px;">
-    <div class='onesignal-customlink-container'></div>
+    <section style="margin-top:50px;">
+       Please accept the notification prompts!
     </section>
-
-    <section class="pwa" style="margin-top:50px;">
-        <p>Finally, install the shortcut. <br>
-        When installing the shortcut, enter your username exactly as: <pre>{{ user }}</pre></p>
-
-        <p>After installing the shortcut, when you share your wordle score (using the share button from your wordle results) a new option will be in the share sheet:<br>
-            <BR><BR><img width=250px src="{{ url_for('static', filename='images/sharesheet.png') }}" /><br><BR><BR>
-        You can exit the shortcuts app after it has been imported.  Use that to share your scores and enter comments (please accept permissions for always when submitting)</p>
-        Download the shortcut <a href="static/Submit Wordle.shortcut">HERE</a>.
-    </section>
-    </div>
+    </div><pre>
+    <div id="error-log"></div>
+    </pre>
     <script>
-        function showObjects(theclass) {
-            divs = document.getElementsByClassName(theclass);
-            for (x = 0; x < divs.length; x++) {
-                 divs[x].style.display = "block"
-            }
-        }
+        console.log = (function (old_function, div_log) { 
+            return function (text) {
+                old_function(text);
+                div_log.textContent  += text + "\n";
+            };
+        } (console.log.bind(console), document.getElementById("error-log")));
 
-        function hideObjects(theclass) {
-            divs = document.getElementsByClassName(theclass);
-            
-            for (x = 0; x < divs.length; x++) {
-                 divs[x].style.display = "none"
-            }
-        }
+        // function showObjects(theclass) {
+        //         divs = document.getElementsByClassName(theclass);
+        //         for (x = 0; x < divs.length; x++) {
+        //             divs[x].style.display = "block"
+        //         }
+        //     }
 
-        isInWebAppiOS = (window.navigator.standalone == true);
-        isInWebAppChrome = (window.matchMedia('(display-mode: standalone)').matches);
+        //     function hideObjects(theclass) {
+        //         divs = document.getElementsByClassName(theclass);
 
-        if (isInWebAppChrome) {
-            
-            hideObjects("ios");
-            hideObjects("web");
-            showObjects("pwa");
-        } else if (isInWebAppiOS) {
-            hideObjects("web");
-            showObjects("pwa");
-            showObjects("ios");
-        } else {
-            hideObjects("pwa");
-            hideObjects("ios");
-            showObjects("web");
-        }
+        //         for (x = 0; x < divs.length; x++) {
+        //             divs[x].style.display = "none"
+        //         }
+        //     }
 
-        function pushSubscriptionChangeListener(event) {
-            if (event.current.token) {
-              //  const subscription  = OneSignal.User.PushSubscription;
-                console.log(event.current)
-                
-                if (event.current.optedIn) {
-                    OneSignalDeferred.push(function(OneSignal) {
-       
-                        setTimeout( function() { OneSignal.login("{{ user }}");; }, 2000);
-                        
-                    }
-                )} else {
-                    OneSignalDeferred.push(function(OneSignal) {
-       
-                        setTimeout( function() { OneSignal.logout();; }, 2000);
-                    })
+        //     isInWebAppiOS = (window.navigator.standalone == true);
+        //     isInWebAppChrome = (window.matchMedia('(display-mode: standalone)').matches);
+
+        //     if (isInWebAppChrome) {
+
+        //         hideObjects("ios");
+        //         hideObjects("web");
+        //         showObjects("pwa");
+        //     } else if (isInWebAppiOS) {
+        //         hideObjects("web");
+        //         showObjects("pwa");
+        //         showObjects("ios");
+        //     } else {
+        //         hideObjects("pwa");
+        //         hideObjects("ios");
+        //         showObjects("web");
+        //     }
+
+
+            async function pushSubscriptionChangeListener(event) {
+                if (event.current.token) {
+                    //  const subscription  = OneSignal.User.PushSubscription;
+
+                    console.log(event.current)
+                    console.log("HERE3")
+
+                    if (event.current.optedIn) {
+                        console.log("HERE4")
+                        OneSignalDeferred.push(async function (OneSignal) {
+
+                            loggedIn = getCookie("loggedIn");
+                            if (loggedIn !== event.current.token) {
+                                console.log("LogginInChanged")
+                                OneSignal.login("{{ user }}").then(async value => {
+                                    setCookie("loggedIn", event.current.token, 1000);
+                                    await new Promise(r => setTimeout(r, 2000));
+                                    window.location.replace("/score");
+
+                                }).catch(error => {
+                                    console.log("error logging in: " + error);
+                                });
+                            }                       
+                            else {
+                                window.location.replace("/score");
+                            }
+                        });
+                            
+                    } 
+
                 }
-                
             }
-        }       
 
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.User.PushSubscription.addEventListener("change", pushSubscriptionChangeListener);        
-        console.log(OneSignal.User.PushSubscription);
-    });
+            function getCookie(name) {
+                const nameEquals = name + '=';
+                const cookieArray = document.cookie.split(';');
+
+                for (cookie of cookieArray) {
+                    while (cookie.charAt(0) == ' ') {
+                        cookie = cookie.slice(1, cookie.length);
+                    }
+
+                    if (cookie.indexOf(nameEquals) == 0)
+                        return decodeURIComponent(
+                            cookie.slice(nameEquals.length, cookie.length),
+                        );
+                }
+
+                return null;
+            }
+
+            function setCookie(cname, cvalue, exdays) {
+                const d = new Date();
+                d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+                let expires = "expires=" + d.toUTCString();
+                document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+            }
+
+
+
+            function initializeListener() {
+                console.log("Initializing");
+
+                OneSignal.User.PushSubscription.addEventListener("change", pushSubscriptionChangeListener);
+
+                OneSignalDeferred.push(async function (OneSignal) {
+                    //console.log(OneSignal);
+                    // OneSignal.addEventListener("initialize", initializeListener);        
+                    console.log(OneSignal.User.PushSubscription);
+                    let permission = await OneSignal.Notifications.permission
+                    //console.log(OneSignal.User.PushSubscription);    
+                    console.log("Permission: " + permission)                
+                    if (!permission) {
+                        OneSignalDeferred.push(async function (OneSignal) {
+                            console.log("Requesting Permissing2")
+                            await OneSignal.Slidedown.promptPush();                            
+                            // await OneSignal.Notifications.requestPermission();
+
+                            
+                        });
+                    }
+                    else if (!OneSignal.User.PushSubscription.optedIn || OneSignal.User.PushSubscription.id === undefined) {
+                        OneSignalDeferred.push(async function (OneSignal) {
+                            console.log("Opting in")
+                            OneSignal.User.PushSubscription.optIn()
+                        });
+                    }
+
+                    if (OneSignal.User.PushSubscription.token) {
+                        //  const subscription  = OneSignal.User.PushSubscription;
+
+                        console.log("HERE1")
+
+                        if (OneSignal.User.PushSubscription.optedIn) {
+                            console.log("HERE2")
+                            OneSignalDeferred.push(async function (OneSignal) {
+
+                                loggedIn = getCookie("loggedIn");
+                                if (loggedIn !== OneSignal.User.PushSubscription.token) {
+                                    console.log("LoggingInNotChanged")
+                                    OneSignal.login("{{ user }}").then(async value => {
+                                        setCookie("loggedIn", OneSignal.User.PushSubscription.token, 1000);
+                                        await new Promise(r => setTimeout(r, 2000));
+                                        window.location.replace("/score");
+                                    }).catch(error => {
+                                        console.log("error logging in: " + error);
+                                    });
+                                }            
+                                else {
+                                    window.location.replace("/score");
+                                }           
+                            });
+                                
+                        } 
+
+                    }
+                });
+
+            }
+
+            window.OneSignalDeferred = window.OneSignalDeferred || [];
+            OneSignalDeferred.push(async function (OneSignal) {
+                OneSignal.Debug.setLogLevel("debug");
+                console.log()
+                OneSignal.init({
+                    appId: "{{ config.get('APP_ID') }}",
+                }).then(value => {
+                    initializeListener();
+                })
+            });
+
+
+
     
     </script>
+   
 {% endblock %}

@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Share!</h1>
+    {{ user.name }}
+    <pre>{{ score }}</pre>
+    <form method="get" action="/share">
+        <label>Comment:</label><input id="comment" name="comment" type="text" />
+        <input type="hidden" id="score" name="score" value="{{ score }}" />        
+        <button type="submit">Submit</button>
+    </form>
+    
+{% endblock %}

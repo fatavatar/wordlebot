@@ -1,8 +1,9 @@
 import logging
+import os
 import time
 import storage
 import sys
-import messenger
+import notifier
 
 class User:
     @staticmethod
@@ -194,7 +195,7 @@ class Tournament:
             if users is not None and storage.startTournament(wordle, days):
                 for user in users:
                     body = user.name + ", you've been registered for a " + str(days) + " day wordle tournament starting with wordle " + str(wordle) + ".  Please text your daily scores to this number.  Good luck!"
-                    messenger.sendMessage(user.number, body)                    
+                    notifier.sendMessage(user.name, body)                    
 
                 return True
         return False
@@ -233,7 +234,7 @@ class Tournament:
                         
         for user in self.users:
             if user.id not in found_users:                
-                entries.append(Entry(user, wordle, None, False, "No Guesses Entered", None))
+                entries.append(Entry(user, wordle, None, False, None, None))
         
         standings = None
         if done:
@@ -267,7 +268,7 @@ class Tournament:
                 # Get Standings
                 for user in self.users:
                     body = user['name'] + ", The tournament has ended"
-                    messenger.sendMessage(user['phone'], body)                    
+                    notifier.sendMessage(user['name'], body)                    
 
                 return True
         return False
@@ -307,7 +308,7 @@ class Tournament:
                 message = score.user.name + " has entered their score"
                 if score.flavor_text is not None and len(score.flavor_text) > 0:
                     message = message + "\nThey said: " + score.flavor_text
-                messenger.sendMessage(user.number, message)
+                notifier.sendMessage(user.name, message)
         self.entries = Entry.getEntries(self.id)
         todays_entries = []
         for entry in self.entries:
@@ -317,25 +318,18 @@ class Tournament:
             self.closeDay(score.wordle)
             self.reportDay(score.wordle)
             
-            results = Results(self)
-            for user in self.users:
-                messenger.sendMessage(user.number, str(results))
+            # results = Results(self)
+            # for user in self.users:
+            #     notifier.sendMessage(user.name, str(results))
             
         
         return True
         
 
     def reportDay(self, wordle):
-        for entry in self.entries:
-            if entry.wordle == wordle:
-                guess = "X/6*"
-                if entry.failure == 0:
-                    guess = str(entry.guess_count) + "/6*"
-                body = entry.user.name + ":\n" + \
-                    "Wordle " + str(wordle) + " " + guess + "\n\n" + \
-                    entry.guesses
-                for user in self.users:                    
-                    messenger.sendMessage(user.number, body)
+        for user in self.users:                    
+            notifier.sendMessage(user.name, "All entries are completed")
+        
 
 class Results:
     def __init__(self, tournament, standings=None):
@@ -404,8 +398,18 @@ def main():
         else:
             logger.debug("Failed!")
     
-    messenger.shutdown()
+    notifier.shutdown()
 
 logger = logging.getLogger("WordleBot")
+
 if __name__ == "__main__":
+    
+    formatter = logging.Formatter('[%(levelname)s] %(message)s')
+    handler = logging.StreamHandler()
+        
+    handler.setFormatter(formatter)
+
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+    logger.debug("Startup")
     main()

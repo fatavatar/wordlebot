@@ -6,9 +6,11 @@ from tournament import Entry
 def parse(user, body, comment = None):
     try:
         # Parse line by line
+        body = body.replace("\r", "")
         lines = body.split("\n")
 
         logger.debug(len(lines))
+        
 
         if not lines[0].endswith("*"):
             logger.debug("Whoops, not hard mode!")

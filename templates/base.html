@@ -28,27 +28,7 @@
     
     {% endblock head %}
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-    <script>
-      
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.Debug.setLogLevel('debug');
-        OneSignal.init({
-          appId: "{{ config.get('APP_ID') }}",
-        }).then(function() {
-        console.log("Registering")
-        OneSignal.Notifications.addEventListener("click", function (event)
-        {
-          console.log("Got Event!")
-          //For root applications: just change "'./'" to "'/'"
-          //Very important having the last forward slash on "new URL('./', location)..."
-          // const rootUrl = new URL('/', location).href; 
-          event.notification.close();
-          event.waitUntil(clients.openWindow(event.notification.data.url));
-        });
-      });
-      });
-    </script>
+    
   </head>
   <body{% block body_attrs %}{% endblock body_attrs %}>
     {% block body %}

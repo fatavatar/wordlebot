@@ -30,8 +30,8 @@
     <div>
         {% for entry in wordle.entries %}
 
-            {{ entry.user }} 
-            {% if entry.guesses is not None %}
+            {{ entry.user.name }} 
+            {% if entry.guesses is not none %}
             has
             {% else %}
             hasn't

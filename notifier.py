@@ -30,19 +30,25 @@ def startMessageQueue():
 
 def updateThread():
     configuration = onesignal.Configuration(
-        app_key = auth_token
+        app_key = settings.AUTH_TOKEN
     )
+    print("HERE1")
     with onesignal.ApiClient(configuration) as api_client:
+        print("HERE2")
         # Create an instance of the API class
         api_instance = default_api.DefaultApi(api_client)
 
         while True:
             number,message = q.get()
+            print("HERE3")
             logger.debug("Got Queue item")
             if len(number) == 0:
                 break
             logger.debug("Sending Notification to " + number)
-            notification = Notification(content=message)
+            content = StringMap()
+            content.set_attribute('en',message)
+            notification = Notification(contents=content, app_id=settings.APP_ID, include_external_user_ids=[number], url="https://wordle.thelucks.org/score")
+                
             try:
                 # Create notification
                 api_response = api_instance.create_notification(notification)
@@ -72,12 +78,12 @@ def main():
     with onesignal.ApiClient(configuration) as api_client:
         # Create an instance of the API class
         api_instance = default_api.DefaultApi(api_client)
-        number="Andrew"
-        message="Wes has entered a score!"
+        number="Wes"
+        message="I gotta deal with this fuckin boomer retard"
         content = StringMap()
         content.set_attribute('en',message)
         logger.debug("Sending Notification to " + number)
-        notification = Notification(contents=content, app_id=settings.APP_ID, include_external_user_ids= ["Andrew"], url="https://wordle.thelucks.org/score")
+        notification = Notification(contents=content, app_id=settings.APP_ID, include_external_user_ids= [number], url="https://wordle.thelucks.org/score")
         try:
             # Create notification
             api_response = api_instance.create_notification(notification)

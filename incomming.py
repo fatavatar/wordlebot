@@ -1,3 +1,4 @@
+import io
 import os
 import sys
 from flask import Flask, request, redirect, render_template, send_file, url_for
@@ -36,12 +37,27 @@ def entries():
 
     return render_template('entries.html', entries=entries)
 
+@app.route("/webshare", methods=['GET', 'POST'])
+def webshare():
+    username = None
+    if request.cookies.get(usercookie) is None:
+        if request.args.get('user') is None:
+            return "Sorry, you are not logged in"
+        else:
+            username = request.args.get('user')
+    else:
+        username = request.cookies.get(usercookie)
+    score = request.args.get('score')
+
+    user = User.getUserByName(username)    
+    return render_template('webshare.html', score=score, user=user)
+
 
 @app.route("/share", methods=['GET', 'POST'])
 def share():
     username = None
     if request.cookies.get(usercookie) is None:
-        if request.args.get('score') is None:
+        if request.args.get('user') is None:
             return "Sorry, you are not logged in"
         else:
             username = request.args.get('user')
@@ -60,6 +76,8 @@ def share():
     comment = request.args.get('comment')
     
     logger.info("Entry from user: " + user.name)
+    logger.info("Score = " + score)
+    logger.info("Comment = " + comment)
     results = wordle_parser.parse(user, score, comment=comment)
     
     if results is None:
@@ -168,7 +186,7 @@ def getscore():
     wordle = request.values.get('wordle', None)
     current = Tournament.getCurrentTournament()
     if current is None:
-        return None
+        return "Sorry no current tournament"
     day = None
     if wordle is None:
         day = current.getLatestDay()

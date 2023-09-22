@@ -17,7 +17,7 @@
     ],
     "splash_pages": null,
     "share_target": {
-      "action": "webshare",
+      "action": "/webshare",
       "params": {
         "text": "score"
       }

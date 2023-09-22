@@ -4,12 +4,10 @@ var cacheVersion = new Date().getTime();
 var staticCacheName = "wordlebot-v" + cacheVersion
 
 var filesToCache = [
-    '/',
-    '/offline',
     '/static/images/icons/favicon.ico',
     '/static/images/icons/android-chrome-192x192.png',
     '/static/images/icons/android-chrome-512x512.png',
-    '/static/images/icons/apple-touch-icon.png',
+    '/static/images/icons/apple-touch-icon.png'
 ];
 
 // Cache on install
@@ -71,33 +69,9 @@ self.addEventListener('activate', event => {
   );
 });
 
-async function cleanRedirect(response) {
-  const clonedResponse = response.clone();
-
-  return new Response(await clonedResponse.blob(), {
-    headers: clonedResponse.headers,
-    status: clonedResponse.status,
-    statusText: clonedResponse.statusText,
-  });
-}
 
 // Serve from cache, and return offline page if client is offline 
-this.addEventListener('fetch', event => {
-  if (event.response.type === 'opaqueredirect') {
-    return event.respondWith(cleanRedirect(event.response))
-  }
-  if (event.request.mode === 'navigate' || (event.request.method === 'GET' && event.request.headers.get('accept').includes('text/html'))) {
-    event.respondWith(
-      fetch(event.request.url).catch(error => {
-        return caches.match('/offline');
-      })
-    );
-  } else{
-    event.respondWith(caches.match(event.request)
-        .then(function (response) {
-        return response || fetch(event.request);
-      })
-    );
-  }
+self.addEventListener("fetch", (event) => {
+  event.respondWith(fetch(event.request));
 });
 
