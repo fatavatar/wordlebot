@@ -194,7 +194,7 @@ class Tournament:
             users = User.getUsers()        
             if users is not None and storage.startTournament(wordle, days):
                 for user in users:
-                    body = user.name + ", you've been registered for a " + str(days) + " day wordle tournament starting with wordle " + str(wordle) + ".  Please text your daily scores to this number.  Good luck!"
+                    body = user.name + ", you've been registered for a " + str(days) + " day wordle tournament starting with wordle " + str(wordle) + ".  Please submit your scores daily to the wordlebot in your share sheet."
                     notifier.sendMessage(user.name, body)                    
 
                 return True
