@@ -17,7 +17,8 @@ def parse(user, body, comment = None):
             return None
 
         returnval = {}
-        result = re.search(r"Wordle (\b\d+) (\b[\dX]+)/6*", lines[0])
+        nocomma = lines[0].replace(",", "")
+        result = re.search(r"Wordle (\b\d+) (\b[\dX]+)/6*", nocomma)
         logger.debug(result.groups())
         wordle=int(result.group(1))
         guesses=result.group(2)

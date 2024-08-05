@@ -1,5 +1,15 @@
 importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
 
+
+self.addEventListener("visibilitychange", function () {
+  console.log("Visibility changed");
+  if (document.visibilityState === "visible") {
+    console.log("APP resumed");
+    window.location.reload();
+  }
+});
+
+
 self.addEventListener('notificationclick', function (event)
 {
   console.log("Got Event!")
