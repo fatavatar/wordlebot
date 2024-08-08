@@ -45,16 +45,23 @@ def updateThread():
             if len(number) == 0:
                 break
             logger.debug("Sending Notification to " + number)
-            content = StringMap()
-            content.set_attribute('en',message)
-            notification = Notification(contents=content, app_id=settings.APP_ID, include_external_user_ids=[number], url="https://wordle.thelucks.org/score")
-                
-            try:
-                # Create notification
-                api_response = api_instance.create_notification(notification)
-                print(api_response)
-            except onesignal.ApiException as e:
-                print("Exception when calling DefaultApi->create_notification: %s\n" % e)
+            
+            count = 0
+            while (count < 2):
+                try:
+                    content = StringMap()
+                    content.set_attribute('en',message)
+                    notification = Notification(contents=content, app_id=settings.APP_ID, include_external_user_ids=[number], url="https://wordle.thelucks.org/score")
+                    # Create notification
+                    api_response = api_instance.create_notification(notification)
+                    print(api_response)
+                    break
+                except Exception as e:
+                    print("Exception when calling DefaultApi->create_notification: %s\n" % e)
+                    count = count + 1
+                    api_instance = default_api.DefaultApi(api_client)
+
+                    
                 
             
 
