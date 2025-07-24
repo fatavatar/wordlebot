@@ -165,6 +165,20 @@ def getCurrentTournament():
         logger.debug("Error getting tournament: " + str(e))
         return None
 
+
+def getTournamentById(tournament_id):
+    try:
+        with closing(sqlite3.connect(db_name)) as con, con,  \
+            closing(con.cursor()) as cur:
+            cur.execute("SELECT id, start_wordle, days FROM tournament WHERE id = ?", (tournament_id,))
+            
+            tournament_id, start_wordle, days = cur.fetchone()
+            return StorageTournament(tournament_id, start_wordle, days, False)
+            
+    except Exception as e:
+        logger.debug("Error getting tournament: " + str(e))
+        return None
+    
 def getEntries(tournament_id):
     try:
         users = getUsers()

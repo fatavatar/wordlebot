@@ -188,6 +188,13 @@ class Tournament:
         return None
     
     @staticmethod
+    def getTournamentById(id):
+        storage_tournament = storage.getTournamentById(id)
+        if storage_tournament is not None:
+            return Tournament.__fromStorage(storage_tournament)
+        return None
+    
+    @staticmethod
     def startTournament(wordle, days):
         tournament = Tournament.getCurrentTournament()
         if tournament is None:
@@ -382,6 +389,13 @@ def main():
             
         else:
             logger.debug("Failure!")
+    
+    elif command == "print":
+        id=sys.argv[2]
+        tournament = Tournament.getTournamentById(id)
+        for user in tournament.getStandings().getSorted():
+            print(user.user.name + " " + str(user.guesses) + " ("+ str(user.misses) + ")")
+
 
 
     elif len(sys.argv) != 4:
