@@ -25,12 +25,11 @@
 
   <div class="form-group">
     <label>Email</label>
-    <input type="email" value="{{ g.user['email'] }}" disabled
-           style="background:var(--color-tone-6);color:var(--color-tone-2)">
+    <input type="email" value="{{ g.user['email'] }}" disabled>
   </div>
 
   <div class="form-group">
-    <label for="timezone">Timezone <span style="font-weight:400;text-transform:none">(affects score deadline)</span></label>
+    <label for="timezone">Timezone <span style="font-weight:400;text-transform:none;letter-spacing:0">(sets your daily deadline)</span></label>
     <select id="timezone" name="timezone">
       {% set regions = namespace(prev='') %}
       {% for tz in timezones %}
@@ -49,17 +48,39 @@
     </select>
   </div>
 
+  <!-- ── Colorblind Mode ── -->
   <div class="form-group">
-    <label style="flex-direction:row;align-items:center;display:flex;gap:10px;text-transform:none;font-size:14px;font-weight:400;cursor:pointer">
-      <input type="checkbox" id="colorblind" name="colorblind"
-             {% if g.user['colorblind'] %}checked{% endif %}
-             style="width:20px;height:20px;cursor:pointer">
-      Colorblind mode
-      <span style="display:inline-flex;gap:4px;margin-left:4px">
-        <span style="width:18px;height:18px;border-radius:2px;background:var(--color-correct)"></span>
-        <span style="width:18px;height:18px;border-radius:2px;background:var(--color-present)"></span>
-      </span>
-    </label>
+    <label>Accessibility</label>
+    <div class="cb-toggle-card" onclick="document.getElementById('colorblind').click()">
+      <div class="cb-toggle-info">
+        <div class="cb-toggle-title">Colorblind mode</div>
+        <div class="cb-toggle-desc">Replaces green with orange and yellow with blue — easier to distinguish for color-vision deficiency.</div>
+        <div class="cb-swatches">
+          <div class="cb-swatch-group">
+            <div class="cb-swatch-label">Standard</div>
+            <div class="cb-swatch-dots">
+              <div class="swatch-dot swatch-normal-correct" title="Correct"></div>
+              <div class="swatch-dot swatch-normal-present" title="Present"></div>
+              <div class="swatch-dot swatch-normal-absent"  title="Absent"></div>
+            </div>
+          </div>
+          <div style="color:var(--t3);font-size:16px;align-self:flex-end;padding-bottom:2px">→</div>
+          <div class="cb-swatch-group">
+            <div class="cb-swatch-label">Colorblind</div>
+            <div class="cb-swatch-dots">
+              <div class="swatch-dot swatch-cb-correct" title="Correct (orange)"></div>
+              <div class="swatch-dot swatch-cb-present" title="Present (blue)"></div>
+              <div class="swatch-dot swatch-cb-absent"  title="Absent"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <label class="pill-toggle" onclick="event.stopPropagation()">
+        <input type="checkbox" id="colorblind" name="colorblind"
+               {% if g.user['colorblind'] %}checked{% endif %}>
+        <span class="pill-slider"></span>
+      </label>
+    </div>
   </div>
 
   <button type="submit" class="btn btn-primary">Save changes</button>
@@ -67,30 +88,31 @@
 
 <hr>
 
+<!-- iOS Shortcut -->
 <h2>iOS Shortcut</h2>
-<p style="color:var(--color-tone-2);font-size:14px">Use your unique API key to submit scores directly from the Wordle app.</p>
-<div style="margin-bottom:8px">
+<p style="color:var(--t2);font-size:14px;margin-bottom:12px">Submit scores directly from the Wordle app without opening a browser.</p>
+<div class="form-group">
   <label>Your API key</label>
-  <div style="display:flex;gap:8px;align-items:center">
-    <input type="text" id="auth-key" value="{{ g.user['auth_key'] }}" readonly
-           style="font-family:monospace;font-size:13px;background:var(--color-tone-6)">
-    <button type="button" onclick="copyAuthKey()" class="btn btn-secondary btn-sm" style="width:auto;white-space:nowrap">
+  <div style="display:flex;gap:8px">
+    <input type="text" id="auth-key" value="{{ g.user['auth_key'] }}" readonly class="mono">
+    <button type="button" id="copy-btn" onclick="copyAuthKey()" class="btn btn-secondary btn-sm" style="width:auto;flex-shrink:0">
       Copy
     </button>
   </div>
 </div>
-<a href="{{ url_for('pwa.ios_shortcut') }}" style="font-size:14px">Setup instructions →</a>
+<a href="{{ url_for('pwa.ios_shortcut') }}" style="font-size:14px;color:var(--t2)">Setup instructions →</a>
 
 <hr>
 
+<!-- Push Notifications -->
 <h2>Push Notifications</h2>
-<p style="color:var(--color-tone-2);font-size:14px">Get notified when other players submit their scores.</p>
-<div id="push-status"></div>
+<p style="color:var(--t2);font-size:14px;margin-bottom:12px">Get notified when teammates submit their scores.</p>
+<div id="push-status" style="margin-bottom:8px;font-size:13px;color:var(--t2)"></div>
 <button id="push-btn" type="button" class="btn btn-secondary btn-sm" style="width:auto" onclick="togglePush()">
   Enable notifications
 </button>
-<div style="margin-top:8px;font-size:12px;color:var(--color-tone-2)">
-  <a href="{{ url_for('pwa.notification_help') }}">Having trouble? See setup help →</a>
+<div style="margin-top:10px;font-size:12px;color:var(--t3)">
+  <a href="{{ url_for('pwa.notification_help') }}">Having trouble? →</a>
 </div>
 
 {% endblock %}
@@ -100,22 +122,19 @@
 function copyAuthKey() {
   const el = document.getElementById('auth-key');
   navigator.clipboard.writeText(el.value).then(() => {
-    const btn = event.target;
+    const btn = document.getElementById('copy-btn');
     btn.textContent = 'Copied!';
     setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
   });
 }
 
-// Colorblind preview + localStorage sync
-const cbCheckbox = document.getElementById('colorblind');
-cbCheckbox.addEventListener('change', function() {
+// Colorblind toggle — instant preview + localStorage sync
+document.getElementById('colorblind').addEventListener('change', function () {
   document.body.classList.toggle('colorblind', this.checked);
   localStorage.setItem('colorblind', this.checked ? '1' : '0');
 });
 
 // Push notification toggle
-const VAPID_KEY = '{{ config.VAPID_PUBLIC_KEY if config else "" }}';
-
 async function togglePush() {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
     document.getElementById('push-status').textContent = 'Push notifications are not supported in this browser.';
@@ -132,8 +151,7 @@ async function togglePush() {
       document.getElementById('push-status').textContent = 'Notifications disabled.';
       btn.textContent = 'Enable notifications';
     } else {
-      const resp = await fetch('/pwa/vapid-public-key');
-      const { publicKey } = await resp.json();
+      const { publicKey } = await fetch('/pwa/vapid-public-key').then(r => r.json());
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(publicKey),
@@ -146,7 +164,7 @@ async function togglePush() {
       document.getElementById('push-status').textContent = '✓ Notifications enabled!';
       btn.textContent = 'Disable notifications';
     }
-  } catch(e) {
+  } catch (e) {
     document.getElementById('push-status').textContent = 'Error: ' + e.message;
   }
   btn.disabled = false;

@@ -2,8 +2,8 @@
 {% block title %}Set up your profile — Wordle Tournament{% endblock %}
 
 {% block content %}
-<h1>Welcome! Set up your profile</h1>
-<p style="color:var(--color-tone-2);margin-bottom:24px">This is shown on leaderboards.</p>
+<h1>Welcome!</h1>
+<p style="color:var(--t2);margin-bottom:28px;margin-top:-8px">Set a display name — this appears on leaderboards.</p>
 
 {% if error %}
   <div class="alert alert-error">{{ error }}</div>
@@ -25,7 +25,7 @@
   </div>
 
   <div class="form-group">
-    <label for="timezone">Your timezone</label>
+    <label for="timezone">Your timezone <span style="font-weight:400;text-transform:none;letter-spacing:0">(sets your daily deadline)</span></label>
     <select id="timezone" name="timezone">
       {% set regions = {} %}
       {% for tz in timezones %}
@@ -44,6 +44,6 @@
     </select>
   </div>
 
-  <button type="submit" class="btn btn-primary">Save and continue</button>
+  <button type="submit" class="btn btn-primary">Save and continue →</button>
 </form>
 {% endblock %}

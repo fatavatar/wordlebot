@@ -3,36 +3,35 @@
 {% block main_class %}wide{% endblock %}
 
 {% block content %}
-<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+<!-- Tournament header -->
+<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:28px">
   <div>
-    <h1 style="margin-bottom:4px">{{ tournament.name }}</h1>
-    <span class="section-title" style="border:none;padding:0">
-      Wordle #{{ tournament.start_puzzle }}–#{{ tournament.start_puzzle + tournament.num_days - 1 }}
-      &nbsp;·&nbsp;
-      <span style="color:{{ 'var(--color-correct)' if state == 'ACTIVE' else ('var(--color-tone-2)' if state == 'UPCOMING' else 'var(--color-absent)') }}">
-        {{ state }}
-      </span>
-    </span>
+    <h1 style="margin-bottom:6px">{{ tournament.name }}</h1>
+    <div style="font-size:13px;color:var(--t2);display:flex;align-items:center;gap:10px">
+      <span>Puzzle #{{ tournament.start_puzzle }}–{{ tournament.start_puzzle + tournament.num_days - 1 }}</span>
+      <span class="badge badge-{{ state|lower }}">{{ state }}</span>
+    </div>
   </div>
   <div style="display:flex;gap:8px;flex-wrap:wrap">
     {% if not is_member and state != 'ENDED' %}
       <form method="post" action="{{ url_for('tournaments.join', tournament_id=tournament.id) }}">
-        <button type="submit" class="btn btn-primary btn-sm">Join Tournament</button>
+        <button type="submit" class="btn btn-primary btn-sm" style="width:auto">Join Tournament</button>
       </form>
     {% elif is_member and state == 'ACTIVE' %}
-      <a href="{{ url_for('tournaments.submit', tournament_id=tournament.id) }}" class="btn btn-primary btn-sm">Submit Score</a>
+      <a href="{{ url_for('tournaments.submit', tournament_id=tournament.id) }}" class="btn btn-primary btn-sm" style="width:auto">Submit Score</a>
     {% endif %}
   </div>
 </div>
 
 {% if standings %}
+
 <!-- Leaderboard -->
-<div style="margin-bottom:32px">
-  <div class="section-title">Leaderboard</div>
+<div style="margin-bottom:36px">
+  <div class="section-label">Leaderboard</div>
   <table class="leaderboard">
     <thead>
       <tr>
-        <th class="rank">#</th>
+        <th style="width:36px">#</th>
         <th>Name</th>
         <th>Misses</th>
         <th>Total Guesses</th>
@@ -41,65 +40,72 @@
     </thead>
     <tbody>
       {% for entry in standings %}
-      <tr {% if entry.user_id == g.user.id %}class="current-user"{% endif %}>
-        <td class="rank">{{ entry.rank }}</td>
-        <td>{{ entry.name }}</td>
-        <td>{{ entry.total_misses }}</td>
+      <tr class="{% if entry.user_id == g.user.id %}me{% endif %} rank-{{ entry.rank }}">
+        <td class="rank-num">{{ entry.rank }}</td>
+        <td>
+          {{ entry.name }}
+          {% if entry.user_id == g.user.id %}<span style="font-size:11px;color:var(--t2);margin-left:4px">(you)</span>{% endif %}
+        </td>
+        <td style="color:{% if entry.total_misses > 0 %}var(--color-absent){% else %}var(--t2){% endif %};font-weight:{% if entry.total_misses > 0 %}700{% else %}400{% endif %}">
+          {{ entry.total_misses }}
+        </td>
         <td>{{ entry.total_guesses }}</td>
-        <td>{{ entry.days_submitted }}</td>
+        <td style="color:var(--t2)">{{ entry.days_submitted }}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
 
-<!-- Day Grid -->
+<!-- Day grid -->
 {% if puzzle_range %}
-<div style="margin-bottom:32px;overflow-x:auto">
-  <div class="section-title">Day-by-Day</div>
-  <table style="border-collapse:separate;border-spacing:4px;min-width:max-content">
-    <thead>
-      <tr>
-        <th style="text-align:left;padding:4px 8px;font-size:11px;color:var(--color-tone-2)">Player</th>
-        {% for pnum in puzzle_range %}
-        <th style="padding:4px;font-size:10px;color:var(--color-tone-2);text-align:center;min-width:36px">
-          #{{ pnum }}
-        </th>
-        {% endfor %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for entry in standings %}
-      <tr>
-        <td style="padding:4px 8px;font-size:13px;white-space:nowrap;font-weight:{{ '700' if entry.user_id == g.user.id else '400' }}">
-          {{ entry.name }}
-        </td>
-        {% for pnum in puzzle_range %}
-          {% set ds = entry.daily_scores.get(pnum, {}) %}
-          {% set g_val = ds.get('guesses') %}
-          {% if visible(entry.user_id, pnum) or entry.user_id == g.user.id %}
-            {% if g_val is none %}
-              <td style="padding:4px;text-align:center">
-                <div class="day-grid-cell future" title="Not yet submitted"></div>
-              </td>
+<div style="margin-bottom:36px">
+  <div class="section-label">Day by Day</div>
+  <div class="day-grid-wrap">
+    <table style="border-collapse:separate;border-spacing:4px;min-width:max-content">
+      <thead>
+        <tr>
+          <th style="text-align:left;padding:4px 12px 4px 4px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--t2)">Player</th>
+          {% for pnum in puzzle_range %}
+          <th style="padding:4px 2px;font-size:10px;color:var(--t3);text-align:center;min-width:38px;font-weight:700;letter-spacing:0.04em">
+            #{{ pnum }}
+          </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in standings %}
+        <tr>
+          <td style="padding:4px 12px 4px 4px;font-size:13px;white-space:nowrap;font-weight:{{ '700' if entry.user_id == g.user.id else '400' }};color:{{ 'var(--t1)' if entry.user_id == g.user.id else 'var(--t2)' }}">
+            {{ entry.name }}
+          </td>
+          {% for pnum in puzzle_range %}
+            {% set ds = entry.daily_scores.get(pnum, {}) %}
+            {% set g_val = ds.get('guesses') %}
+            {% if visible(entry.user_id, pnum) or entry.user_id == g.user.id %}
+              {% if g_val is none %}
+                <td style="padding:2px;text-align:center">
+                  <div class="day-grid-cell future" title="Not yet submitted"></div>
+                </td>
+              {% else %}
+                <td style="padding:2px;text-align:center">
+                  <div class="day-grid-cell {{ cell_class(g_val) }}"
+                       title="{{ 'MISS' if g_val == 0 else (g_val ~ ' guess' ~ ('es' if g_val != 1 else '')) }}{% if ds.get('comment') %} · {{ ds.comment }}{% endif %}">
+                    {{ 'M' if g_val == 0 else g_val }}
+                  </div>
+                </td>
+              {% endif %}
             {% else %}
-              <td style="padding:4px;text-align:center">
-                <div class="day-grid-cell {{ cell_class(g_val) }}"
-                     title="{{ 'MISS' if g_val == 0 else g_val ~ ' guess' ~ ('es' if g_val != 1 else '') }}">
-                  {{ 'M' if g_val == 0 else g_val }}
-                </div>
+              <td style="padding:2px;text-align:center">
+                <div class="day-grid-cell hidden" title="Submit your score to see this">—</div>
               </td>
             {% endif %}
-          {% else %}
-            <td style="padding:4px;text-align:center">
-              <div class="day-grid-cell hidden" title="Submit your score to see this">—</div>
-            </td>
-          {% endif %}
+          {% endfor %}
+        </tr>
         {% endfor %}
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endif %}
 
@@ -107,7 +113,5 @@
 <div class="alert alert-info">No players yet — be the first to join!</div>
 {% endif %}
 
-<div style="margin-top:16px">
-  <a href="{{ url_for('ui.dashboard') }}" style="font-size:14px;color:var(--color-tone-2)">← Back to dashboard</a>
-</div>
+<a href="{{ url_for('ui.dashboard') }}" style="font-size:13px;color:var(--t2)">← Back to dashboard</a>
 {% endblock %}

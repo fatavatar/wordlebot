@@ -16,14 +16,17 @@
   </div>
 
   <div class="form-group">
-    <label for="start_puzzle">Starting Wordle # <span style="font-weight:400;text-transform:none">(today is #{{ today_puzzle }})</span></label>
+    <label for="start_puzzle">
+      Starting Wordle #
+      <span style="font-weight:400;text-transform:none;letter-spacing:0">(today is #{{ today_puzzle }})</span>
+    </label>
     <input type="number" id="start_puzzle" name="start_puzzle"
            value="{{ form.get('start_puzzle', today_puzzle) }}"
            min="1" required>
   </div>
 
   <div class="form-group">
-    <label for="num_days">Number of days</label>
+    <label for="num_days">Duration (days)</label>
     <input type="number" id="num_days" name="num_days"
            value="{{ form.get('num_days', 7) }}"
            min="1" max="365" required>
@@ -32,7 +35,7 @@
   <button type="submit" class="btn btn-primary">Create Tournament</button>
 </form>
 
-<div style="margin-top:16px">
-  <a href="{{ url_for('ui.dashboard') }}" style="font-size:14px;color:var(--color-tone-2)">← Back to dashboard</a>
+<div style="margin-top:20px">
+  <a href="{{ url_for('ui.dashboard') }}" style="font-size:13px;color:var(--t2)">← Back to dashboard</a>
 </div>
 {% endblock %}

@@ -7,12 +7,12 @@
 
 // Wordle share text client-side parser for live preview
 function previewScore(text) {
-  const re = /^Wordle\s+(?:#TODAY|#?(\d+))\s+(X|\d)\/6(\*)?/m;
+  const re = /^Wordle\s+(?:#TODAY|#?([\d,]+))\s+(X|\d)\/6(\*)?/m;
   const m = text.match(re);
   if (!m) return { valid: false };
   return {
     valid: !!m[3],
-    puzzleNumber: m[1] ? parseInt(m[1], 10) : null,
+    puzzleNumber: m[1] ? parseInt(m[1].replace(/,/g, ''), 10) : null,
     guesses: m[2] === 'X' ? 0 : parseInt(m[2], 10),
     hardMode: !!m[3],
   };

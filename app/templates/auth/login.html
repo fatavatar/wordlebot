@@ -2,9 +2,11 @@
 {% block title %}Log in — Wordle Tournament{% endblock %}
 
 {% block content %}
-<div style="text-align:center;margin-bottom:32px">
-  <h1 style="font-size:32px;letter-spacing:0.1em;text-transform:uppercase">Wordle<br>Tournament</h1>
-  <p style="color:var(--color-tone-2);margin-top:8px">Sign in or create an account</p>
+<div style="text-align:center;margin-bottom:40px;margin-top:12px">
+  <h1 style="font-family:'Arvo',Georgia,serif;font-size:42px;font-weight:700;letter-spacing:0.02em;line-height:1.1;margin-bottom:10px">
+    Wordle<br>Tournament
+  </h1>
+  <p style="color:var(--t2);font-size:14px">Compete with friends on the NYT daily puzzle</p>
 </div>
 
 {% if error %}
@@ -27,7 +29,7 @@
   <button type="submit" class="btn btn-primary">Send login code</button>
 </form>
 
-<p style="text-align:center;margin-top:24px;font-size:14px;color:var(--color-tone-2)">
+<p style="text-align:center;margin-top:28px;font-size:13px;color:var(--t2)">
   We'll email you a 6-digit code. No password needed.
 </p>
 {% endblock %}

@@ -15,9 +15,10 @@
 <body class="{% if g.user and g.user.get('colorblind') %}colorblind{% endif %}">
 
 <header class="site-header">
-  <div class="logo">
-    <a href="{{ url_for('ui.dashboard') }}" style="color:inherit;text-decoration:none">Wordle Tournament</a>
-  </div>
+  <a href="{{ url_for('ui.dashboard') }}" class="logo" style="text-decoration:none">
+    Wordle Tournament
+    <small>Compete daily</small>
+  </a>
   <nav class="nav-links">
     {% if g.user %}
       <a href="{{ url_for('ui.profile') }}">{{ g.user['name'] or g.user['email'] }}</a>

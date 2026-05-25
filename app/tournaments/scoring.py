@@ -22,9 +22,9 @@ class ParsedScore:
     raw_header: str
 
 
-# Matches: "Wordle 1234 4/6*"  or  "Wordle #1234 4/6*"  or  "Wordle #TODAY 4/6*"
+# Matches: "Wordle 1234 4/6*"  or  "Wordle 1,801 4/6*"  or  "Wordle #1234 4/6*"  or  "Wordle #TODAY 4/6*"
 _HEADER_RE = re.compile(
-    r"^Wordle\s+(?:#TODAY|#?(?P<num>\d+))\s+(?P<g>X|\d)/6(?P<hard>\*)?",
+    r"^Wordle\s+(?:#TODAY|#?(?P<num>[\d,]+))\s+(?P<g>X|\d)/6(?P<hard>\*)?",
     re.MULTILINE | re.IGNORECASE,
 )
 
@@ -40,7 +40,7 @@ def parse_wordle_share(text: str, today_puzzle: int) -> ParsedScore:
     raw = text[m.start():m.end()]
 
     if m.group("num"):
-        puzzle_number = int(m.group("num"))
+        puzzle_number = int(m.group("num").replace(",", ""))
     else:
         # #TODAY
         puzzle_number = today_puzzle
