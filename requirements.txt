@@ -1,0 +1,6 @@
+flask>=3.0
+pywebpush>=2.0
+pytest>=8.0
+pytest-playwright>=0.5
+playwright>=1.44
+python-dotenv>=1.0

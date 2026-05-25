@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}Profile — Wordle Tournament{% endblock %}
+
+{% block content %}
+<h1>Your Profile</h1>
+
+{% if errors %}
+  {% for e in errors %}
+    <div class="alert alert-error">{{ e }}</div>
+  {% endfor %}
+{% endif %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+  {% endfor %}
+{% endwith %}
+
+<form method="post" action="{{ url_for('ui.profile') }}">
+  <div class="form-group">
+    <label for="name">Display name</label>
+    <input type="text" id="name" name="name" value="{{ g.user['name'] or '' }}"
+           maxlength="50" required autofocus>
+  </div>
+
+  <div class="form-group">
+    <label>Email</label>
+    <input type="email" value="{{ g.user['email'] }}" disabled
+           style="background:var(--color-tone-6);color:var(--color-tone-2)">
+  </div>
+
+  <div class="form-group">
+    <label for="timezone">Timezone <span style="font-weight:400;text-transform:none">(affects score deadline)</span></label>
+    <select id="timezone" name="timezone">
+      {% set regions = namespace(prev='') %}
+      {% for tz in timezones %}
+        {% set parts = tz.split('/') %}
+        {% set region = parts[0] if parts|length > 1 else 'Other' %}
+        {% if region != regions.prev %}
+          {% if regions.prev %}
+            </optgroup>
+          {% endif %}
+          <optgroup label="{{ region }}">
+          {% set regions.prev = region %}
+        {% endif %}
+        <option value="{{ tz }}" {% if tz == g.user['timezone'] %}selected{% endif %}>{{ tz }}</option>
+      {% endfor %}
+      </optgroup>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label style="flex-direction:row;align-items:center;display:flex;gap:10px;text-transform:none;font-size:14px;font-weight:400;cursor:pointer">
+      <input type="checkbox" id="colorblind" name="colorblind"
+             {% if g.user['colorblind'] %}checked{% endif %}
+             style="width:20px;height:20px;cursor:pointer">
+      Colorblind mode
+      <span style="display:inline-flex;gap:4px;margin-left:4px">
+        <span style="width:18px;height:18px;border-radius:2px;background:var(--color-correct)"></span>
+        <span style="width:18px;height:18px;border-radius:2px;background:var(--color-present)"></span>
+      </span>
+    </label>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Save changes</button>
+</form>
+
+<hr>
+
+<h2>iOS Shortcut</h2>
+<p style="color:var(--color-tone-2);font-size:14px">Use your unique API key to submit scores directly from the Wordle app.</p>
+<div style="margin-bottom:8px">
+  <label>Your API key</label>
+  <div style="display:flex;gap:8px;align-items:center">
+    <input type="text" id="auth-key" value="{{ g.user['auth_key'] }}" readonly
+           style="font-family:monospace;font-size:13px;background:var(--color-tone-6)">
+    <button type="button" onclick="copyAuthKey()" class="btn btn-secondary btn-sm" style="width:auto;white-space:nowrap">
+      Copy
+    </button>
+  </div>
+</div>
+<a href="{{ url_for('pwa.ios_shortcut') }}" style="font-size:14px">Setup instructions →</a>
+
+<hr>
+
+<h2>Push Notifications</h2>
+<p style="color:var(--color-tone-2);font-size:14px">Get notified when other players submit their scores.</p>
+<div id="push-status"></div>
+<button id="push-btn" type="button" class="btn btn-secondary btn-sm" style="width:auto" onclick="togglePush()">
+  Enable notifications
+</button>
+<div style="margin-top:8px;font-size:12px;color:var(--color-tone-2)">
+  <a href="{{ url_for('pwa.notification_help') }}">Having trouble? See setup help →</a>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyAuthKey() {
+  const el = document.getElementById('auth-key');
+  navigator.clipboard.writeText(el.value).then(() => {
+    const btn = event.target;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+  });
+}
+
+// Colorblind preview + localStorage sync
+const cbCheckbox = document.getElementById('colorblind');
+cbCheckbox.addEventListener('change', function() {
+  document.body.classList.toggle('colorblind', this.checked);
+  localStorage.setItem('colorblind', this.checked ? '1' : '0');
+});
+
+// Push notification toggle
+const VAPID_KEY = '{{ config.VAPID_PUBLIC_KEY if config else "" }}';
+
+async function togglePush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    document.getElementById('push-status').textContent = 'Push notifications are not supported in this browser.';
+    return;
+  }
+  const btn = document.getElementById('push-btn');
+  btn.disabled = true;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) {
+      await existing.unsubscribe();
+      await fetch('/pwa/push/unsubscribe', { method: 'POST' });
+      document.getElementById('push-status').textContent = 'Notifications disabled.';
+      btn.textContent = 'Enable notifications';
+    } else {
+      const resp = await fetch('/pwa/vapid-public-key');
+      const { publicKey } = await resp.json();
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey),
+      });
+      await fetch('/pwa/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sub.toJSON()),
+      });
+      document.getElementById('push-status').textContent = '✓ Notifications enabled!';
+      btn.textContent = 'Disable notifications';
+    }
+  } catch(e) {
+    document.getElementById('push-status').textContent = 'Error: ' + e.message;
+  }
+  btn.disabled = false;
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(base64);
+  return new Uint8Array([...raw].map(c => c.charCodeAt(0)));
+}
+</script>
+{% endblock %}

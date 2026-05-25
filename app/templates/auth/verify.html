@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Enter code — Wordle Tournament{% endblock %}
+
+{% block content %}
+<div style="text-align:center;margin-bottom:24px">
+  <h1>Check your email</h1>
+  <p style="color:var(--color-tone-2)">
+    We sent a 6-digit code to <strong>{{ email }}</strong>
+  </p>
+</div>
+
+{% if error %}
+  <div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+<form method="post" action="{{ url_for('auth.verify') }}">
+  <input type="hidden" name="email" value="{{ email }}">
+  <div class="form-group">
+    <label for="code">Login code</label>
+    <input
+      type="text"
+      id="code"
+      name="code"
+      class="code-input"
+      placeholder="000000"
+      maxlength="6"
+      inputmode="numeric"
+      pattern="[0-9]{6}"
+      autocomplete="one-time-code"
+      required
+      autofocus
+    >
+  </div>
+  <button type="submit" class="btn btn-primary">Verify</button>
+</form>
+
+<div style="text-align:center;margin-top:20px">
+  <a href="{{ url_for('auth.login') }}" style="font-size:14px;color:var(--color-tone-2)">
+    Use a different email or resend code
+  </a>
+</div>
+{% endblock %}

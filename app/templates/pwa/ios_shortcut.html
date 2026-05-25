@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}iOS Shortcut Setup — Wordle Tournament{% endblock %}
+
+{% block content %}
+<h1>iOS Shortcut Setup</h1>
+<p style="color:var(--color-tone-2);margin-bottom:24px">
+  Submit your Wordle score directly from the Wordle app using an iOS Shortcut.
+</p>
+
+<div class="section-title">Your API Key</div>
+<div class="card" style="margin-bottom:24px">
+  <p style="font-size:13px;color:var(--color-tone-2);margin-bottom:8px">Copy this key — you'll need it when setting up the Shortcut.</p>
+  <div style="display:flex;gap:8px;align-items:center">
+    <input type="text" id="auth-key" value="{{ g.user['auth_key'] }}" readonly
+           style="font-family:monospace;font-size:13px;background:var(--color-tone-6)">
+    <button type="button" onclick="copyKey()" class="btn btn-secondary btn-sm" style="width:auto">Copy</button>
+  </div>
+</div>
+
+<div class="section-title">Setup Instructions</div>
+
+<div style="counter-reset:step">
+
+<div class="card" style="margin-bottom:8px;display:flex;gap:16px;align-items:flex-start">
+  <div style="font-size:24px;font-weight:700;color:var(--color-tone-4);min-width:32px">1</div>
+  <div>
+    <strong>Open the Shortcuts app</strong> on your iPhone and tap <strong>+</strong> to create a new Shortcut.
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:8px;display:flex;gap:16px;align-items:flex-start">
+  <div style="font-size:24px;font-weight:700;color:var(--color-tone-4);min-width:32px">2</div>
+  <div>
+    <strong>Add a "Receive Input from Share Sheet"</strong> action. Set "Share Sheet Input" to <em>Text</em>.
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:8px;display:flex;gap:16px;align-items:flex-start">
+  <div style="font-size:24px;font-weight:700;color:var(--color-tone-4);min-width:32px">3</div>
+  <div>
+    <strong>Add an "Ask for Input"</strong> action. Set the prompt to <em>"Add a comment (optional)"</em>.
+    Save the result as <strong>Comment</strong>.
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:8px;display:flex;gap:16px;align-items:flex-start">
+  <div style="font-size:24px;font-weight:700;color:var(--color-tone-4);min-width:32px">4</div>
+  <div>
+    <strong>Add a "Get Contents of URL"</strong> action with these settings:
+    <div style="margin-top:8px;background:var(--color-tone-6);padding:12px;border-radius:4px;font-family:monospace;font-size:13px">
+      <div><strong>URL:</strong> {{ request.host_url }}api/submit</div>
+      <div style="margin-top:4px"><strong>Method:</strong> POST</div>
+      <div style="margin-top:4px"><strong>Body:</strong> JSON</div>
+      <div style="margin-top:4px"><strong>Fields:</strong></div>
+      <div style="margin-left:16px">auth_key = <em>{{ g.user['auth_key'] }}</em></div>
+      <div style="margin-left:16px">score = <em>Shortcut Input</em></div>
+      <div style="margin-left:16px">comment = <em>Comment (variable)</em></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:8px;display:flex;gap:16px;align-items:flex-start">
+  <div style="font-size:24px;font-weight:700;color:var(--color-tone-4);min-width:32px">5</div>
+  <div>
+    <strong>Add an "Open URLs"</strong> action. Set the URL to:
+    <div style="margin-top:8px;background:var(--color-tone-6);padding:12px;border-radius:4px;font-family:monospace;font-size:13px">
+      {{ request.host_url }}
+    </div>
+    This opens the app after submitting.
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:24px;display:flex;gap:16px;align-items:flex-start">
+  <div style="font-size:24px;font-weight:700;color:var(--color-tone-4);min-width:32px">6</div>
+  <div>
+    <strong>Name the Shortcut</strong> something like "Submit Wordle" and add it to your home screen.
+  </div>
+</div>
+
+</div>
+
+<div class="section-title">Using the Shortcut</div>
+<div class="card">
+  <ol style="margin-left:20px;line-height:2">
+    <li>Finish your Wordle puzzle</li>
+    <li>Tap <strong>Share</strong> in the Wordle app</li>
+    <li>Scroll down and tap <strong>Submit Wordle</strong> (your shortcut)</li>
+    <li>Optionally enter a comment</li>
+    <li>Done! Your score is submitted automatically</li>
+  </ol>
+</div>
+
+<div style="margin-top:16px">
+  <a href="{{ url_for('ui.profile') }}" style="font-size:14px;color:var(--color-tone-2)">← Back to profile</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyKey() {
+  const el = document.getElementById('auth-key');
+  navigator.clipboard.writeText(el.value).then(() => {
+    const btn = event.target;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+  });
+}
+</script>
+{% endblock %}

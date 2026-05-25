@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Submit Score — {{ tournament.name }}{% endblock %}
+
+{% block content %}
+<h1>Submit Score</h1>
+<p style="color:var(--color-tone-2);margin-bottom:20px">{{ tournament.name }}</p>
+
+{% if error %}
+  <div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+<form method="post" action="{{ url_for('tournaments.submit', tournament_id=tournament.id) }}" id="submit-form">
+  <div class="form-group">
+    <label for="share_text">Paste your Wordle share text</label>
+    <textarea
+      id="share_text"
+      name="share_text"
+      rows="8"
+      class="share-textarea"
+      placeholder="Wordle 1234 4/6*&#10;⬛🟨⬛⬛🟩&#10;..."
+      required
+    >{{ share_text or '' }}</textarea>
+  </div>
+
+  <!-- Live preview -->
+  <div id="preview" style="display:none;margin-bottom:16px;padding:12px;background:var(--color-tone-6);border-radius:4px">
+    <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-tone-2);margin-bottom:8px">Preview</div>
+    <div id="preview-content"></div>
+    <div id="preview-error" style="color:var(--color-error);font-size:14px;font-weight:700"></div>
+  </div>
+
+  <div class="form-group">
+    <label for="comment">Comment <span style="font-weight:400;text-transform:none">(optional)</span></label>
+    <input type="text" id="comment" name="comment" maxlength="280"
+           placeholder="How'd it go?" value="{{ request.form.get('comment','') }}">
+  </div>
+
+  <button type="submit" id="submit-btn" class="btn btn-primary">Submit Score</button>
+</form>
+
+<div style="margin-top:16px">
+  <a href="{{ url_for('tournaments.detail', tournament_id=tournament.id) }}"
+     style="font-size:14px;color:var(--color-tone-2)">← Back to tournament</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const HEADER_RE = /^Wordle\s+(?:#TODAY|#?(\d+))\s+(X|\d)\/6(\*)?/m;
+const textarea = document.getElementById('share_text');
+const preview = document.getElementById('preview');
+const previewContent = document.getElementById('preview-content');
+const previewError = document.getElementById('preview-error');
+const submitBtn = document.getElementById('submit-btn');
+
+function updatePreview() {
+  const text = textarea.value;
+  if (!text.trim()) {
+    preview.style.display = 'none';
+    submitBtn.disabled = false;
+    return;
+  }
+  preview.style.display = 'block';
+  const m = text.match(HEADER_RE);
+  if (!m) {
+    previewContent.innerHTML = '';
+    previewError.textContent = 'Could not find a Wordle score header.';
+    submitBtn.disabled = true;
+    return;
+  }
+  if (!m[3]) {
+    previewContent.innerHTML = '';
+    previewError.textContent = 'Hard Mode (*) is required.';
+    submitBtn.disabled = true;
+    return;
+  }
+  previewError.textContent = '';
+  const puzzle = m[1] || '#TODAY';
+  const guesses = m[2] === 'X' ? 'MISS' : m[2];
+  previewContent.innerHTML = `
+    <div style="font-size:14px">
+      <strong>Puzzle #${puzzle}</strong> &nbsp;·&nbsp;
+      ${guesses === 'MISS' ? '<span style="color:var(--color-absent)">MISS</span>' : guesses + ' guess' + (guesses !== '1' ? 'es' : '')}
+      &nbsp;·&nbsp; <span style="color:var(--color-correct)">Hard Mode ✓</span>
+    </div>`;
+  submitBtn.disabled = false;
+}
+
+textarea.addEventListener('input', updatePreview);
+updatePreview();
+</script>
+{% endblock %}

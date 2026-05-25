@@ -1,0 +1,318 @@
+/* ============================================================
+   NYT Wordle-inspired theme
+   ============================================================ */
+
+/* Clear Sans — freely available alternative to NYT's font */
+@import url('https://fonts.googleapis.com/css2?family=Clear+Sans:wght@400;700&display=swap');
+
+:root {
+  /* Tile colors — normal mode */
+  --color-correct:  #6aaa64;
+  --color-present:  #c9b458;
+  --color-absent:   #787c7e;
+
+  /* Colorblind palette */
+  --cb-color-correct: #f5793a;
+  --cb-color-present: #85c0f9;
+
+  /* Tones */
+  --color-tone-1: #1a1a1b;
+  --color-tone-2: #787c7e;
+  --color-tone-3: #878a8c;
+  --color-tone-4: #d3d6da;
+  --color-tone-5: #edeff1;
+  --color-tone-6: #f6f7f8;
+  --color-tone-7: #ffffff;
+
+  /* UI */
+  --color-bg:           var(--color-tone-7);
+  --color-header-bg:    var(--color-tone-7);
+  --color-header-border: var(--color-tone-4);
+  --color-text:         var(--color-tone-1);
+  --color-text-muted:   var(--color-tone-2);
+  --color-btn-primary:  var(--color-tone-1);
+  --color-btn-text:     var(--color-tone-7);
+  --color-input-border: var(--color-tone-4);
+  --color-error:        #d7373f;
+  --color-success:      #6aaa64;
+  --color-link:         var(--color-tone-1);
+
+  --font-main: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
+  --header-height: 56px;
+  --max-width: 500px;
+  --border-radius: 4px;
+}
+
+body.colorblind {
+  --color-correct: var(--cb-color-correct);
+  --color-present: var(--cb-color-present);
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; }
+
+body {
+  font-family: var(--font-main);
+  background: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a { color: var(--color-link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Header ── */
+header.site-header {
+  height: var(--header-height);
+  border-bottom: 1px solid var(--color-header-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  position: sticky;
+  top: 0;
+  background: var(--color-header-bg);
+  z-index: 100;
+}
+
+.site-header .logo {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.site-header .nav-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.site-header .nav-links a {
+  color: var(--color-tone-2);
+}
+
+/* ── Main content ── */
+main {
+  flex: 1;
+  padding: 24px 16px;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  width: 100%;
+}
+
+main.wide { max-width: 900px; }
+
+/* ── Typography ── */
+h1 { font-size: 24px; font-weight: 700; margin-bottom: 16px; }
+h2 { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+p  { line-height: 1.5; margin-bottom: 12px; }
+
+/* ── Forms ── */
+.form-group {
+  margin-bottom: 16px;
+}
+
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+  color: var(--color-tone-2);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid var(--color-input-border);
+  border-radius: var(--border-radius);
+  font-family: var(--font-main);
+  font-size: 16px;
+  color: var(--color-text);
+  background: var(--color-bg);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--color-tone-1);
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 24px;
+  border: none;
+  border-radius: var(--border-radius);
+  font-family: var(--font-main);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.15s;
+  letter-spacing: 0.05em;
+}
+
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn:hover:not(:disabled) { opacity: 0.85; text-decoration: none; }
+
+.btn-primary {
+  background: var(--color-btn-primary);
+  color: var(--color-btn-text);
+  width: 100%;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-tone-1);
+  border: 2px solid var(--color-tone-1);
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+/* ── Alerts ── */
+.alert {
+  padding: 12px 16px;
+  border-radius: var(--border-radius);
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.alert-error   { background: #fce8e8; color: var(--color-error); border: 1px solid #f5c6c6; }
+.alert-success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+.alert-info    { background: var(--color-tone-6); color: var(--color-tone-1); border: 1px solid var(--color-tone-4); }
+
+/* ── Code input (auth code) ── */
+.code-input {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  padding: 16px;
+}
+
+/* ── Cards ── */
+.card {
+  border: 1px solid var(--color-tone-4);
+  border-radius: var(--border-radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+/* ── Section headings ── */
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-tone-2);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-tone-4);
+  margin-bottom: 12px;
+}
+
+/* ── Dividers ── */
+hr { border: none; border-top: 1px solid var(--color-tone-4); margin: 20px 0; }
+
+/* ── Wordle tile grid (for score preview) ── */
+.tile-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.tile {
+  width: 36px;
+  height: 36px;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+}
+
+.tile.correct { background: var(--color-correct); }
+.tile.present { background: var(--color-present); }
+.tile.absent  { background: var(--color-absent); }
+.tile.empty   { background: var(--color-tone-5); border: 2px solid var(--color-tone-4); }
+
+/* ── Day grid (tournament detail) ── */
+.day-grid-cell {
+  width: 32px;
+  height: 32px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  cursor: default;
+}
+
+.day-grid-cell.miss        { background: var(--color-absent); }
+.day-grid-cell.guess-great { background: var(--color-correct); }
+.day-grid-cell.guess-ok    { background: var(--color-present); color: var(--color-tone-1); }
+.day-grid-cell.guess-bad   { background: var(--color-tone-3); }
+.day-grid-cell.hidden      { background: var(--color-tone-5); color: var(--color-tone-3); font-size: 16px; }
+.day-grid-cell.future      { background: var(--color-tone-5); border: 1px dashed var(--color-tone-4); }
+
+/* ── Leaderboard ── */
+.leaderboard {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.leaderboard th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-tone-2);
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 2px solid var(--color-tone-4);
+}
+
+.leaderboard td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-tone-5);
+  font-size: 14px;
+}
+
+.leaderboard tr.current-user td { background: var(--color-tone-6); font-weight: 700; }
+.leaderboard .rank { font-weight: 700; width: 40px; }
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  main { padding: 16px 12px; }
+  h1 { font-size: 20px; }
+  .btn { padding: 12px 20px; font-size: 15px; }
+}

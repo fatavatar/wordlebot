@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Pick a Tournament — Wordle Tournament{% endblock %}
+
+{% block content %}
+<h1>Which tournament?</h1>
+<p style="color:var(--color-tone-2);margin-bottom:20px">Select the tournament to submit your score to.</p>
+
+{% if not tournaments %}
+  <div class="alert alert-info">You're not in any active tournaments.</div>
+{% else %}
+  {% for t in tournaments %}
+    <a href="{{ url_for('tournaments.submit', tournament_id=t.id, share_text=share_text) }}"
+       class="card" style="display:block;text-decoration:none;color:inherit;margin-bottom:8px">
+      <div class="card-header">
+        <strong>{{ t.name }}</strong>
+        <span style="font-size:12px;color:var(--color-tone-2)">#{{ t.start_puzzle }}–#{{ t.start_puzzle + t.num_days - 1 }}</span>
+      </div>
+    </a>
+  {% endfor %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Set up your profile — Wordle Tournament{% endblock %}
+
+{% block content %}
+<h1>Welcome! Set up your profile</h1>
+<p style="color:var(--color-tone-2);margin-bottom:24px">This is shown on leaderboards.</p>
+
+{% if error %}
+  <div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+<form method="post" action="{{ url_for('auth.register') }}">
+  <div class="form-group">
+    <label for="name">Display name</label>
+    <input
+      type="text"
+      id="name"
+      name="name"
+      placeholder="Your name"
+      maxlength="50"
+      required
+      autofocus
+      value="{{ request.form.get('name', '') }}"
+    >
+  </div>
+
+  <div class="form-group">
+    <label for="timezone">Your timezone</label>
+    <select id="timezone" name="timezone">
+      {% set regions = {} %}
+      {% for tz in timezones %}
+        {% set parts = tz.split('/') %}
+        {% set region = parts[0] if parts|length > 1 else 'Other' %}
+        {% if region not in regions %}
+          {% if regions %}
+            </optgroup>
+          {% endif %}
+          <optgroup label="{{ region }}">
+          {% set _ = regions.update({region: true}) %}
+        {% endif %}
+        <option value="{{ tz }}" {% if tz == 'America/New_York' %}selected{% endif %}>{{ tz }}</option>
+      {% endfor %}
+      </optgroup>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Save and continue</button>
+</form>
+{% endblock %}

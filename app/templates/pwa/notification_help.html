@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Notification Help — Wordle Tournament{% endblock %}
+
+{% block content %}
+<h1>Enable Notifications</h1>
+<p style="color:var(--color-tone-2);margin-bottom:24px">
+  Push notifications require the app to be installed and notifications to be allowed in your device settings.
+</p>
+
+<div class="section-title">iOS (iPhone / iPad)</div>
+<div class="card" style="margin-bottom:16px">
+  <ol style="margin-left:20px;line-height:2;font-size:14px">
+    <li>Add this app to your Home Screen (Share → Add to Home Screen)</li>
+    <li>Open the app from your Home Screen (not Safari)</li>
+    <li>When prompted, tap <strong>Allow</strong> for notifications</li>
+    <li>If you missed the prompt: go to <strong>Settings → Notifications → Safari</strong> and enable</li>
+  </ol>
+</div>
+
+<div class="section-title">Android</div>
+<div class="card" style="margin-bottom:16px">
+  <ol style="margin-left:20px;line-height:2;font-size:14px">
+    <li>Install the app (browser menu → Install App or Add to Home Screen)</li>
+    <li>When prompted, tap <strong>Allow</strong></li>
+    <li>If blocked: Settings → Apps → Wordle Tournament → Notifications → Allow</li>
+  </ol>
+</div>
+
+<div class="section-title">Desktop Chrome</div>
+<div class="card" style="margin-bottom:16px">
+  <ol style="margin-left:20px;line-height:2;font-size:14px">
+    <li>Click the lock icon in the address bar</li>
+    <li>Set Notifications to <strong>Allow</strong></li>
+    <li>Reload the page and enable from your profile</li>
+  </ol>
+</div>
+
+<div style="margin-top:16px">
+  <a href="{{ url_for('ui.profile') }}" style="font-size:14px;color:var(--color-tone-2)">← Back to profile</a>
+</div>
+{% endblock %}
