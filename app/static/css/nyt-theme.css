@@ -489,6 +489,144 @@ hr { border: none; border-top: 1px solid var(--t4); margin: 32px 0; }
 .pill-toggle input:checked + .pill-slider { background: #f5793a; }
 .pill-toggle input:checked + .pill-slider::before { transform: translateX(22px); }
 
+/* ── Today section ────────────────────────────────────────────── */
+.today-section {
+  background: var(--t6);
+  border: 1px solid var(--t5);
+  border-radius: var(--r);
+  padding: 20px;
+  margin-bottom: 32px;
+}
+
+.today-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.today-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--t2);
+  background: var(--t4);
+  padding: 3px 8px;
+  border-radius: 3px;
+}
+
+.today-puzzle-num {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.today-date {
+  font-size: 13px;
+  color: var(--t2);
+}
+
+/* Progress bar */
+.progress-wrap {
+  margin-bottom: 18px;
+}
+
+.progress-label {
+  font-size: 12px;
+  color: var(--t2);
+  margin-bottom: 6px;
+}
+
+.progress-bar-track {
+  height: 6px;
+  background: var(--t4);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--color-correct);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* Submission card grid */
+.submission-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.submission-card {
+  background: var(--t7);
+  border: 1px solid var(--t4);
+  border-radius: var(--r);
+  padding: 12px;
+  min-width: 0;
+}
+
+.submission-card.is-you {
+  background: #fffcec;
+  border-color: #e8d87a;
+}
+
+.submission-card.pending {
+  background: var(--t6);
+  border-color: var(--t5);
+  opacity: 0.75;
+}
+
+.sc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 6px;
+}
+
+.sc-name {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sc-result {
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sc-result.miss   { color: var(--color-absent); }
+.sc-result.solved { color: var(--color-correct); }
+.sc-result.hidden { color: var(--t3); }
+
+.emoji-grid {
+  font-size: 16px;
+  line-height: 1.4;
+  margin-bottom: 6px;
+  word-break: break-all;
+}
+
+.sc-comment {
+  font-size: 12px;
+  color: var(--t2);
+  font-style: italic;
+  line-height: 1.4;
+  margin-top: 6px;
+}
+
+.sc-pending-label {
+  font-size: 12px;
+  color: var(--t3);
+  font-style: italic;
+}
+
 /* ── Share textarea ────────────────────────────────────────────── */
 .share-textarea {
   font-family: 'Courier New', Courier, monospace;

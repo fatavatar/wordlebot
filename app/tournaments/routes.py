@@ -149,6 +149,23 @@ def detail(tournament_id: int):
         target = member_map.get(uid, {})
         return can_see_score(viewer_id, uid, pnum, scores, target, cfg)
 
+    # Today's submission stats (no extra DB query — derived from existing scores list)
+    viewer_submitted_today = any(
+        s["user_id"] == viewer_id and s["puzzle_number"] == today_puzzle
+        for s in scores
+    )
+    submitted_today_count = sum(
+        1 for s in scores if s["puzzle_number"] == today_puzzle
+    )
+
+    # Viewer's current rank
+    viewer_rank = next(
+        (e["rank"] for e in standings if e["user_id"] == viewer_id), None
+    )
+
+    # Days completed so far within the tournament
+    days_complete = len([p for p in puzzle_range if p < today_puzzle]) if puzzle_range else 0
+
     return render_template(
         "tournaments/detail.html",
         tournament=t,
@@ -160,6 +177,11 @@ def detail(tournament_id: int):
         cell_class=cell_class,
         today_puzzle=today_puzzle,
         puzzle_date=lambda pnum: puzzle_date(pnum, cfg),
+        viewer_submitted_today=viewer_submitted_today,
+        submitted_today_count=submitted_today_count,
+        viewer_rank=viewer_rank,
+        days_complete=days_complete,
+        member_count=len(members),
     )
 
 

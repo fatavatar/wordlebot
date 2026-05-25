@@ -3,30 +3,162 @@
 {% block main_class %}wide{% endblock %}
 
 {% block content %}
-<!-- Tournament header -->
-<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:28px">
+
+{# ── Helpers ── #}
+{% set start = tournament.start_puzzle %}
+{% set end = start + tournament.num_days - 1 %}
+{% set total_members = member_count %}
+
+{# ─────────────────────────────────────────────────────────── #}
+{# SECTION 1: Tournament header                               #}
+{# ─────────────────────────────────────────────────────────── #}
+<div style="display:flex;align-items:flex-start;justify-content:space-between;
+            flex-wrap:wrap;gap:12px;margin-bottom:28px">
   <div>
     <h1 style="margin-bottom:6px">{{ tournament.name }}</h1>
-    <div style="font-size:13px;color:var(--t2);display:flex;align-items:center;gap:10px">
-      <span>Puzzle #{{ tournament.start_puzzle }}–{{ tournament.start_puzzle + tournament.num_days - 1 }}</span>
+    <div style="font-size:13px;color:var(--t2);display:flex;align-items:center;
+                gap:8px;flex-wrap:wrap">
+      <span>Puzzle #{{ start }}–#{{ end }}</span>
+      <span>·</span>
       <span class="badge badge-{{ state|lower }}">{{ state }}</span>
+      <span>·</span>
+      <span>{{ total_members }} player{{ 's' if total_members != 1 else '' }}</span>
+      {% if state != 'UPCOMING' and puzzle_range %}
+        <span>·</span>
+        <span>{{ days_complete }}/{{ tournament.num_days }} days complete</span>
+      {% endif %}
+      {% if viewer_rank and standings %}
+        <span>·</span>
+        <span style="font-weight:700;color:var(--t1)">You: #{{ viewer_rank }}</span>
+      {% endif %}
     </div>
   </div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
     {% if not is_member and state != 'ENDED' %}
       <form method="post" action="{{ url_for('tournaments.join', tournament_id=tournament.id) }}">
         <button type="submit" class="btn btn-primary btn-sm" style="width:auto">Join Tournament</button>
       </form>
-    {% elif is_member and state == 'ACTIVE' %}
-      <a href="{{ url_for('tournaments.submit', tournament_id=tournament.id) }}" class="btn btn-primary btn-sm" style="width:auto">Submit Score</a>
+    {% elif is_member and state == 'ACTIVE' and not viewer_submitted_today %}
+      <a href="{{ url_for('tournaments.submit', tournament_id=tournament.id) }}"
+         class="btn btn-primary btn-sm" style="width:auto">Submit Score →</a>
+    {% elif is_member and state == 'ACTIVE' and viewer_submitted_today %}
+      <span style="font-size:12px;color:var(--color-correct);font-weight:700">✓ Submitted today</span>
     {% endif %}
   </div>
 </div>
 
-{% if standings %}
+{# UPCOMING state — just a note, nothing to show yet #}
+{% if state == 'UPCOMING' %}
+<div class="alert alert-info" style="margin-bottom:32px">
+  This tournament starts on Puzzle #{{ start }}
+  ({{ puzzle_date(start).strftime('%B %-d') }}).
+  {% if not is_member %}Join now to participate from day one.{% endif %}
+</div>
+{% endif %}
 
-<!-- Leaderboard -->
-<div style="margin-bottom:36px">
+
+{# ─────────────────────────────────────────────────────────── #}
+{# SECTION 2: Today's puzzle (ACTIVE only)                    #}
+{# ─────────────────────────────────────────────────────────── #}
+{% if state == 'ACTIVE' and today_puzzle >= start and today_puzzle <= end %}
+
+{% set today_pct = ((submitted_today_count / total_members) * 100)|round|int if total_members > 0 else 0 %}
+
+<div class="today-section">
+  <div class="today-heading">
+    <span class="today-label">Today</span>
+    <span class="today-puzzle-num">Puzzle #{{ today_puzzle }}</span>
+    <span class="today-date">{{ puzzle_date(today_puzzle).strftime('%B %-d') }}</span>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label">{{ submitted_today_count }} of {{ total_members }} players submitted</div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" style="width:{{ today_pct }}%"></div>
+    </div>
+  </div>
+
+  {% if is_member and not viewer_submitted_today %}
+    <div style="margin-bottom:16px;padding:12px 14px;background:var(--t7);
+                border:1px dashed var(--t4);border-radius:var(--r);
+                display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <span style="font-size:13px;color:var(--t2)">You haven't submitted yet today.</span>
+      <a href="{{ url_for('tournaments.submit', tournament_id=tournament.id) }}"
+         class="btn btn-primary btn-sm" style="width:auto;flex-shrink:0">Submit now →</a>
+    </div>
+  {% endif %}
+
+  <div class="submission-cards">
+    {% for entry in standings %}
+      {% set ds = entry.daily_scores.get(today_puzzle, {}) %}
+      {% set g_val = ds.get('guesses') %}
+      {% set can_see = visible(entry.user_id, today_puzzle) or entry.user_id == g.user.id %}
+      {% set submitted = g_val is not none %}
+
+      <div class="submission-card
+        {%- if entry.user_id == g.user.id %} is-you{% endif %}
+        {%- if not submitted or not can_see %} pending{% endif %}">
+
+        <div class="sc-header">
+          <span class="sc-name">
+            {{ entry.name }}
+            {% if entry.user_id == g.user.id %}
+              <span style="font-size:10px;color:var(--t2);font-weight:400"> (you)</span>
+            {% endif %}
+          </span>
+          {% if submitted and can_see %}
+            {% if g_val == 0 %}
+              <span class="sc-result miss">MISS</span>
+            {% else %}
+              <span class="sc-result solved">{{ g_val }}/6</span>
+            {% endif %}
+          {% elif submitted and not can_see %}
+            <span class="sc-result hidden">—</span>
+          {% endif %}
+        </div>
+
+        {% if submitted and can_see %}
+          {% if ds.get('share_text') %}
+            <div class="emoji-grid">
+              {% for line in ds.share_text.split('\n') %}
+                {% set stripped = line.strip() %}
+                {% if stripped and not stripped.lower().startswith('wordle') %}
+                  <div>{{ stripped }}</div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+          {% if ds.get('comment') %}
+            <div class="sc-comment">"{{ ds.comment }}"</div>
+          {% endif %}
+
+        {% elif submitted and not can_see %}
+          <div class="sc-pending-label">Submit to reveal</div>
+          {% if ds.get('comment') %}
+            <div class="sc-comment">"{{ ds.comment }}"</div>
+          {% endif %}
+
+        {% else %}
+          {# not submitted yet #}
+          {% if entry.user_id == g.user.id %}
+            <div class="sc-pending-label">Go submit!</div>
+          {% else %}
+            <div class="sc-pending-label">Not submitted yet</div>
+          {% endif %}
+        {% endif %}
+
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+
+{# ─────────────────────────────────────────────────────────── #}
+{# SECTION 3: Leaderboard                                      #}
+{# ─────────────────────────────────────────────────────────── #}
+{% if standings %}
+<div style="margin-bottom:32px">
   <div class="section-label">Leaderboard</div>
   <table class="leaderboard">
     <thead>
@@ -35,7 +167,7 @@
         <th>Name</th>
         <th>Misses</th>
         <th>Total Guesses</th>
-        <th>Submitted</th>
+        <th>Days</th>
       </tr>
     </thead>
     <tbody>
@@ -44,9 +176,12 @@
         <td class="rank-num">{{ entry.rank }}</td>
         <td>
           {{ entry.name }}
-          {% if entry.user_id == g.user.id %}<span style="font-size:11px;color:var(--t2);margin-left:4px">(you)</span>{% endif %}
+          {% if entry.user_id == g.user.id %}
+            <span style="font-size:11px;color:var(--t2);margin-left:4px">(you)</span>
+          {% endif %}
         </td>
-        <td style="color:{% if entry.total_misses > 0 %}var(--color-absent){% else %}var(--t2){% endif %};font-weight:{% if entry.total_misses > 0 %}700{% else %}400{% endif %}">
+        <td style="color:{% if entry.total_misses > 0 %}var(--color-absent){% else %}var(--t2){% endif %};
+                   font-weight:{% if entry.total_misses > 0 %}700{% else %}400{% endif %}">
           {{ entry.total_misses }}
         </td>
         <td>{{ entry.total_guesses }}</td>
@@ -56,18 +191,28 @@
     </tbody>
   </table>
 </div>
+{% else %}
+<div class="alert alert-info" style="margin-bottom:32px">No players yet — be the first to join!</div>
+{% endif %}
 
-<!-- Day grid -->
+
+{# ─────────────────────────────────────────────────────────── #}
+{# SECTION 4: History — day grid + per-day accordion          #}
+{# ─────────────────────────────────────────────────────────── #}
 {% if puzzle_range %}
-<div style="margin-bottom:36px">
-  <div class="section-label">Day by Day</div>
+
+{# Part A: Day grid — compact colored cell matrix #}
+<div style="margin-bottom:24px">
+  <div class="section-label">All Days</div>
   <div class="day-grid-wrap">
     <table style="border-collapse:separate;border-spacing:4px;min-width:max-content">
       <thead>
         <tr>
-          <th style="text-align:left;padding:4px 12px 4px 4px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--t2)">Player</th>
+          <th style="text-align:left;padding:4px 12px 4px 4px;font-size:11px;font-weight:700;
+                     letter-spacing:0.06em;text-transform:uppercase;color:var(--t2)">Player</th>
           {% for pnum in puzzle_range %}
-          <th style="padding:4px 2px;font-size:10px;color:var(--t3);text-align:center;min-width:38px;font-weight:700;letter-spacing:0.04em">
+          <th style="padding:4px 2px;font-size:10px;color:var(--t3);text-align:center;
+                     min-width:38px;font-weight:700;letter-spacing:0.04em">
             #{{ pnum }}
           </th>
           {% endfor %}
@@ -76,7 +221,9 @@
       <tbody>
         {% for entry in standings %}
         <tr>
-          <td style="padding:4px 12px 4px 4px;font-size:13px;white-space:nowrap;font-weight:{{ '700' if entry.user_id == g.user.id else '400' }};color:{{ 'var(--t1)' if entry.user_id == g.user.id else 'var(--t2)' }}">
+          <td style="padding:4px 12px 4px 4px;font-size:13px;white-space:nowrap;
+                     font-weight:{{ '700' if entry.user_id == g.user.id else '400' }};
+                     color:{{ 'var(--t1)' if entry.user_id == g.user.id else 'var(--t2)' }}">
             {{ entry.name }}
           </td>
           {% for pnum in puzzle_range %}
@@ -90,14 +237,14 @@
               {% else %}
                 <td style="padding:2px;text-align:center">
                   <div class="day-grid-cell {{ cell_class(g_val) }}"
-                       title="{{ 'MISS' if g_val == 0 else (g_val ~ ' guess' ~ ('es' if g_val != 1 else '')) }}{% if ds.get('comment') %} · {{ ds.comment }}{% endif %}">
+                       title="{{ 'MISS' if g_val == 0 else (g_val ~ '/6') }}{{ ' — ' ~ ds.comment if ds.get('comment') else '' }}">
                     {{ 'M' if g_val == 0 else g_val }}
                   </div>
                 </td>
               {% endif %}
             {% else %}
               <td style="padding:2px;text-align:center">
-                <div class="day-grid-cell hidden" title="Submit your score to see this">—</div>
+                <div class="day-grid-cell hidden" title="Submit to reveal">—</div>
               </td>
             {% endif %}
           {% endfor %}
@@ -107,91 +254,105 @@
     </table>
   </div>
 </div>
-{% endif %}
 
-{% else %}
-<div class="alert alert-info">No players yet — be the first to join!</div>
-{% endif %}
+{# Part B: Per-day accordion — past days (today shown above; ENDED shows all) #}
+{% set show_today_in_history = state == 'ENDED' %}
+{% set history_puzzles = puzzle_range|reverse|list %}
 
-<!-- ── Scores & Comments ── -->
-{% if puzzle_range %}
-<div style="margin-bottom:36px">
-  <div class="section-label">Scores &amp; Comments</div>
+{% for pnum in history_puzzles %}
+  {% if pnum != today_puzzle or show_today_in_history %}
 
-  {% for pnum in puzzle_range|reverse %}
-    {# collect visible submissions for this puzzle #}
-    {% set day_entries = [] %}
-    {% for entry in standings %}
-      {% set ds = entry.daily_scores.get(pnum, {}) %}
-      {% if ds.get('guesses') is not none and (visible(entry.user_id, pnum) or entry.user_id == g.user.id) %}
-        {% set _ = day_entries.append({'entry': entry, 'ds': ds}) %}
-      {% endif %}
-    {% endfor %}
+  {# collect visible entries for this day #}
+  {% set day_entries = [] %}
+  {% for entry in standings %}
+    {% set ds = entry.daily_scores.get(pnum, {}) %}
+    {% if ds.get('guesses') is not none %}
+      {% set _ = day_entries.append({'entry': entry, 'ds': ds, 'can_see': visible(entry.user_id, pnum) or entry.user_id == g.user.id}) %}
+    {% endif %}
+  {% endfor %}
 
-    <details style="border:1px solid var(--t5);border-radius:var(--r);margin-bottom:8px;overflow:hidden" {% if loop.first %}open{% endif %}>
-      <summary style="padding:12px 16px;cursor:pointer;display:flex;align-items:center;
-                      justify-content:space-between;background:var(--t6);list-style:none;
-                      font-size:13px;font-weight:700;user-select:none">
-        <span>
-          Puzzle <span style="font-family:'Arvo',Georgia,serif">#{{ pnum }}</span>
-          <span style="font-size:11px;font-weight:400;color:var(--t2);margin-left:8px">
-            {{ puzzle_date(pnum).strftime('%b %-d') }}
-          </span>
+  <details style="border:1px solid var(--t5);border-radius:var(--r);margin-bottom:8px;overflow:hidden"
+           {% if loop.first %}open{% endif %}>
+    <summary style="padding:12px 16px;cursor:pointer;display:flex;align-items:center;
+                    justify-content:space-between;background:var(--t6);list-style:none;
+                    font-size:13px;font-weight:700;user-select:none">
+      <span>
+        Puzzle <span style="font-family:'Arvo',Georgia,serif">#{{ pnum }}</span>
+        <span style="font-size:11px;font-weight:400;color:var(--t2);margin-left:8px">
+          {{ puzzle_date(pnum).strftime('%B %-d') }}
         </span>
-        <span style="font-size:11px;font-weight:400;color:var(--t3)">
-          {{ day_entries|length }} of {{ standings|length }} submitted
-        </span>
-      </summary>
+      </span>
+      <span style="font-size:11px;font-weight:400;color:var(--t3)">
+        {{ day_entries|length }} of {{ total_members }} submitted
+      </span>
+    </summary>
 
-      <div style="padding:0">
-        {% if day_entries %}
+    <div style="padding:12px 16px">
+      {% if day_entries %}
+        <div class="submission-cards" style="background:transparent">
           {% for item in day_entries %}
             {% set entry = item.entry %}
             {% set ds = item.ds %}
             {% set g_val = ds.get('guesses') %}
-            <div style="padding:12px 16px;border-top:1px solid var(--t5);
-                        {% if entry.user_id == g.user.id %}background:#fffcec{% endif %}">
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:{% if ds.get('comment') or ds.get('share_text') %}8px{% else %}0{% endif %}">
-                <!-- Tile chip -->
-                <span class="day-grid-cell {{ cell_class(g_val) }}"
-                      style="flex-shrink:0;width:28px;height:28px;font-size:10px">
-                  {{ 'M' if g_val == 0 else g_val }}
-                </span>
-                <span style="font-weight:{% if entry.user_id == g.user.id %}700{% else %}600{% endif %};font-size:14px">
+            {% set can_see = item.can_see %}
+            <div class="submission-card {% if entry.user_id == g.user.id %}is-you{% endif %}{% if not can_see %} pending{% endif %}">
+              <div class="sc-header">
+                <span class="sc-name">
                   {{ entry.name }}
-                  {% if entry.user_id == g.user.id %}<span style="font-size:11px;font-weight:400;color:var(--t2)"> (you)</span>{% endif %}
-                </span>
-                <span style="font-size:12px;color:var(--t2);margin-left:auto">
-                  {% if g_val == 0 %}
-                    <span style="color:var(--color-absent)">MISS</span>
-                  {% else %}
-                    {{ g_val }}/6
+                  {% if entry.user_id == g.user.id %}
+                    <span style="font-size:10px;color:var(--t2);font-weight:400"> (you)</span>
                   {% endif %}
                 </span>
+                {% if can_see %}
+                  {% if g_val == 0 %}
+                    <span class="sc-result miss">MISS</span>
+                  {% else %}
+                    <span class="sc-result solved">{{ g_val }}/6</span>
+                  {% endif %}
+                {% else %}
+                  <span class="sc-result hidden">—</span>
+                {% endif %}
               </div>
-
+              {% if can_see %}
+                {% if ds.get('share_text') %}
+                  <div class="emoji-grid">
+                    {% for line in ds.share_text.split('\n') %}
+                      {% set stripped = line.strip() %}
+                      {% if stripped and not stripped.lower().startswith('wordle') %}
+                        <div>{{ stripped }}</div>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              {% else %}
+                <div class="sc-pending-label">Submit to reveal</div>
+              {% endif %}
               {% if ds.get('comment') %}
-                <div style="font-size:14px;color:var(--t1);padding-left:38px;line-height:1.45;
-                            font-style:italic">"{{ ds.comment }}"</div>
+                <div class="sc-comment">"{{ ds.comment }}"</div>
               {% endif %}
             </div>
           {% endfor %}
-        {% else %}
-          <div style="padding:14px 16px;color:var(--t2);font-size:13px;border-top:1px solid var(--t5)">
-            {% if pnum == today_puzzle and is_member %}
-              No scores yet today.
-              <a href="{{ url_for('tournaments.submit', tournament_id=tournament.id) }}"
-                 style="color:var(--t1);font-weight:700">Submit yours →</a>
-            {% else %}
-              No visible scores — submit your score to unlock today's results.
-            {% endif %}
-          </div>
-        {% endif %}
-      </div>
-    </details>
-  {% endfor %}
-</div>
-{% endif %}
+        </div>
+      {% else %}
+        <p style="font-size:13px;color:var(--t2);margin:0">
+          No submissions yet.
+          {% if is_member and pnum == today_puzzle %}
+            <a href="{{ url_for('tournaments.submit', tournament_id=tournament.id) }}"
+               style="color:var(--t1);font-weight:700">Submit yours to unlock →</a>
+          {% endif %}
+        </p>
+      {% endif %}
+    </div>
+  </details>
 
-<a href="{{ url_for('ui.dashboard') }}" style="font-size:13px;color:var(--t2)">← Back to dashboard</a>
+  {% endif %}
+{% endfor %}
+
+{% endif %}{# end puzzle_range #}
+
+
+<div style="margin-top:28px">
+  <a href="{{ url_for('ui.dashboard') }}" style="font-size:13px;color:var(--t2)">← Back to dashboard</a>
+</div>
+
 {% endblock %}
