@@ -14,7 +14,7 @@ bp = Blueprint("ui", __name__)
 @require_login
 def dashboard():
     cfg = get_config()
-    today_puzzle = current_puzzle_number(cfg)
+    today_puzzle = current_puzzle_number(cfg, tz=g.user["timezone"])
     uid = g.user["id"]
 
     # All tournaments

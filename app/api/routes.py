@@ -36,7 +36,7 @@ def submit():
         return jsonify({"error": "score is required"}), 400
 
     cfg = get_config()
-    today_puzzle = current_puzzle_number(cfg)
+    today_puzzle = current_puzzle_number(cfg, tz=user.get("timezone", "UTC"))
 
     try:
         parsed = parse_wordle_share(share_text, today_puzzle)

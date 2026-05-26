@@ -48,7 +48,7 @@ def _is_member(tournament_id: int, user_id: int) -> bool:
 def _apply_late_join_misses(tournament_id: int, user_id: int, tournament: dict):
     """Insert MISS rows for all days before the user joined."""
     cfg = get_config()
-    today = current_puzzle_number(cfg)
+    today = current_puzzle_number(cfg, tz=g.user["timezone"])
     start = tournament["start_puzzle"]
     # Days from start up to (but not including) today that are past deadline
     for pnum in range(start, today):
@@ -65,7 +65,7 @@ def _apply_late_join_misses(tournament_id: int, user_id: int, tournament: dict):
 @require_admin
 def new():
     cfg = get_config()
-    today_puzzle = current_puzzle_number(cfg)
+    today_puzzle = current_puzzle_number(cfg, tz=g.user["timezone"])
 
     if request.method == "POST":
         name = request.form.get("name", "").strip()
@@ -110,7 +110,7 @@ def new():
 @require_login
 def detail(tournament_id: int):
     cfg = get_config()
-    today_puzzle = current_puzzle_number(cfg)
+    today_puzzle = current_puzzle_number(cfg, tz=g.user["timezone"])
     t = _get_tournament_or_404(tournament_id)
     state = tournament_state(t, today_puzzle)
     is_member = _is_member(tournament_id, g.user["id"])
@@ -191,7 +191,7 @@ def detail(tournament_id: int):
 @require_login
 def join(tournament_id: int):
     cfg = get_config()
-    today_puzzle = current_puzzle_number(cfg)
+    today_puzzle = current_puzzle_number(cfg, tz=g.user["timezone"])
     t = _get_tournament_or_404(tournament_id)
     state = tournament_state(t, today_puzzle)
 
@@ -233,7 +233,7 @@ def leave(tournament_id: int):
 @require_login
 def submit(tournament_id: int):
     cfg = get_config()
-    today_puzzle = current_puzzle_number(cfg)
+    today_puzzle = current_puzzle_number(cfg, tz=g.user["timezone"])
     t = _get_tournament_or_404(tournament_id)
     state = tournament_state(t, today_puzzle)
 
@@ -331,7 +331,7 @@ def submit_via_share():
     """Pre-populate submit form from Android share target."""
     share_text = request.args.get("share_text", "").strip()
     cfg = get_config()
-    today_puzzle = current_puzzle_number(cfg)
+    today_puzzle = current_puzzle_number(cfg, tz=g.user["timezone"])
 
     # Find active tournaments the user is in
     tournaments = db.query_all(

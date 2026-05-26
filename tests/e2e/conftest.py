@@ -160,7 +160,7 @@ def smtp_outbox() -> list[dict]:
 
 
 def create_user(flask_app, email: str, name: str = "Test User",
-                timezone: str = "America/New_York",
+                timezone: str = "UTC",
                 is_admin: bool = False) -> dict:
     """Insert a user directly into the DB and return it as a dict."""
     with flask_app.app_context():

@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, datetime, timezone
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -47,8 +47,14 @@ def get_config() -> Config:
     return _config
 
 
-def current_puzzle_number(cfg: Config | None = None, reference: date | None = None) -> int:
+def current_puzzle_number(cfg: Config | None = None, reference: date | None = None, tz: str | None = None) -> int:
     if cfg is None:
         cfg = get_config()
-    d = reference or date.today()
+    if reference:
+        d = reference
+    elif tz:
+        from zoneinfo import ZoneInfo
+        d = datetime.now(ZoneInfo(tz)).date()
+    else:
+        d = datetime.now(timezone.utc).date()
     return (d - cfg.WORDLE_EPOCH).days
