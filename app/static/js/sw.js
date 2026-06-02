@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'wt-v1';
+const CACHE_VERSION = 'wt-v2';
 const STATIC_ASSETS = [
   '/static/css/nyt-theme.css',
   '/static/js/app.js',
@@ -24,27 +24,9 @@ self.addEventListener('activate', (event) => {
   return self.clients.claim();
 });
 
-// Fetch: cache-first for static assets, network-first for navigation
+// Fetch: pass everything through to the network
 self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-
-  if (url.pathname.startsWith('/static/')) {
-    event.respondWith(
-      caches.match(event.request).then((cached) => cached || fetch(event.request))
-    );
-    return;
-  }
-
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request).catch(() =>
-        caches.match('/static/offline.html').then(
-          (r) => r || new Response('Offline', { status: 503 })
-        )
-      )
-    );
-    return;
-  }
+  event.respondWith(fetch(event.request));
 });
 
 // Push notification handler

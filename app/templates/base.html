@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Wordle Tournament{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/nyt-theme.css') }}">
-  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
   <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/icon-192.png') }}">
   <link rel="apple-touch-icon" sizes="192x192" href="{{ url_for('static', filename='icons/icon-192.png') }}">
@@ -19,7 +19,7 @@
 <header class="site-header">
   <a href="{{ url_for('ui.dashboard') }}" class="logo" style="text-decoration:none;display:flex;align-items:center;gap:10px">
     <img src="{{ url_for('static', filename='icons/icon-192.png') }}" alt="" width="36" height="36" style="border-radius:8px;flex-shrink:0">
-    <span>Wordle Tournament<small>Compete daily</small></span>
+    <span>Wordle<span style="color:var(--color-correct)">beta</span><small>Compete daily</small></span>
   </a>
   <nav class="nav-links">
     {% if g.user %}

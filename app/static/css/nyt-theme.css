@@ -245,13 +245,15 @@ input[readonly] {
   border-radius: var(--r);
   font-size: 30px;
   font-weight: 900;
-  text-align: center;
   color: var(--t1);
   background: var(--t7);
   outline: none;
   transition: border-color 0.12s;
   font-family: var(--font-sans);
   caret-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .code-box:focus { border-color: var(--t1); }

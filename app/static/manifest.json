@@ -1,7 +1,8 @@
 {
-  "name": "Wordle Tournament",
-  "short_name": "WTournament",
+  "name": "Wordlebeta",
+  "short_name": "Wordlebeta",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1a1a1b",
@@ -12,7 +13,6 @@
   ],
   "share_target": {
     "action": "/tournaments/submit-via-share",
-    "method": "GET",
     "params": { "text": "share_text" }
   }
 }

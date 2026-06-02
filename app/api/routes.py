@@ -30,7 +30,7 @@ def submit():
         return jsonify({"error": "Invalid auth_key"}), 401
 
     share_text = (data.get("score") or data.get("share_text") or "").strip()
-    comment = (data.get("comment") or "").strip() or None
+    comment = (data.get("comment") or data.get("comment ") or "").strip() or None
 
     if not share_text:
         return jsonify({"error": "score is required"}), 400

@@ -48,15 +48,20 @@ def push_unsubscribe():
 @bp.route("/ios-shortcut")
 @require_login
 def ios_shortcut():
-    return render_template("pwa/ios_shortcut.html")
+    cfg = get_config()
+    return render_template(
+        "pwa/ios_shortcut.html",
+        icloud_url=cfg.IOS_SHORTCUT_ICLOUD_URL,
+        auth_key=g.user["auth_key"],
+    )
 
 
 @bp.route("/ios-shortcut/download")
 @require_login
 def ios_shortcut_download():
-    auth_key = g.user["auth_key"]
     base_url = request.host_url.rstrip("/")
     api_url = f"{base_url}/api/submit"
+    auth_key_uuid = str(uuid.uuid4()).upper()
     comment_uuid = str(uuid.uuid4()).upper()
 
     shortcut = {
@@ -77,6 +82,18 @@ def ios_shortcut_download():
         },
         "WFWorkflowTypes": [],
         "WFWorkflowActions": [
+            # Text action holding the auth key — user edits this once after importing
+            {
+                "WFWorkflowActionIdentifier": "is.workflow.actions.gettext",
+                "WFWorkflowActionParameters": {
+                    "WFTextActionText": {
+                        "Value": {"string": "YOUR_AUTH_KEY"},
+                        "WFSerializationType": "WFTextTokenString",
+                    },
+                    "UUID": auth_key_uuid,
+                    "CustomOutputName": "Auth Key",
+                },
+            },
             # Ask for optional comment
             {
                 "WFWorkflowActionIdentifier": "is.workflow.actions.ask",
@@ -101,7 +118,19 @@ def ios_shortcut_download():
                                 {
                                     "WFItemType": 0,
                                     "WFKey": {"Value": {"string": "auth_key"}, "WFSerializationType": "WFTextTokenString"},
-                                    "WFValue": {"Value": {"string": auth_key}, "WFSerializationType": "WFTextTokenString"},
+                                    "WFValue": {
+                                        "Value": {
+                                            "attachmentsByRange": {
+                                                "{0, 1}": {
+                                                    "OutputName": "Auth Key",
+                                                    "OutputUUID": auth_key_uuid,
+                                                    "Type": "ActionOutput",
+                                                }
+                                            },
+                                            "string": "￼",
+                                        },
+                                        "WFSerializationType": "WFTextTokenString",
+                                    },
                                 },
                                 {
                                     "WFItemType": 0,

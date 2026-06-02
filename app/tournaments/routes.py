@@ -163,8 +163,16 @@ def detail(tournament_id: int):
         (e["rank"] for e in standings if e["user_id"] == viewer_id), None
     )
 
-    # Days completed so far within the tournament
-    days_complete = len([p for p in puzzle_range if p < today_puzzle]) if puzzle_range else 0
+    # Days completed so far within the tournament.
+    # Today counts as complete once every member has submitted.
+    all_submitted_today = (
+        start <= today_puzzle <= end
+        and submitted_today_count == len(members)
+    )
+    days_complete = len([
+        p for p in puzzle_range
+        if p < today_puzzle or (p == today_puzzle and all_submitted_today)
+    ]) if puzzle_range else 0
 
     return render_template(
         "tournaments/detail.html",

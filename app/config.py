@@ -22,6 +22,8 @@ class Config:
     VAPID_PUBLIC_KEY: str = field(default_factory=lambda: os.environ.get("VAPID_PUBLIC_KEY", ""))
     VAPID_CLAIMS_EMAIL: str = field(default_factory=lambda: os.environ.get("VAPID_CLAIMS_EMAIL", ""))
 
+    IOS_SHORTCUT_ICLOUD_URL: str = field(default_factory=lambda: os.environ.get("IOS_SHORTCUT_ICLOUD_URL", ""))
+
     # Wordle puzzle #0 = June 19, 2021. Override with WORDLE_EPOCH_DATE=YYYY-MM-DD.
     WORDLE_EPOCH: date = field(default_factory=lambda: _parse_epoch())
 

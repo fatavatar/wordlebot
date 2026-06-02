@@ -4,24 +4,44 @@
 {% block content %}
 <h1>iOS Shortcut</h1>
 <p style="color:var(--t2);font-size:14px;margin-bottom:24px">
-  Submit your Wordle score directly from the share sheet — no copy-pasting.
+  Submit your Wordle score directly from the share sheet — no copy-pasting into a browser.
 </p>
 
-<div class="card" style="margin-bottom:24px;text-align:center">
-  <div style="font-size:40px;margin-bottom:12px">🔗</div>
-  <p style="margin-bottom:16px;color:var(--t2);font-size:14px">
-    Your shortcut is pre-configured with your API key and server address.<br>
-    Tap below on your iPhone to install it.
+<div class="section-title">Step 1 — Copy your API key</div>
+<div class="card" style="margin-bottom:24px">
+  <p style="color:var(--t2);font-size:13px;margin-bottom:10px">
+    You'll paste this into the shortcut in the next step.
   </p>
-  <a href="{{ url_for('pwa.ios_shortcut_download') }}"
-     class="btn btn-primary" style="width:auto;display:inline-block">
-    Download Shortcut
-  </a>
+  <div style="display:flex;gap:8px">
+    <input type="text" id="auth-key" value="{{ auth_key }}" readonly class="mono">
+    <button type="button" id="copy-btn" onclick="copyAuthKey()" class="btn btn-secondary btn-sm" style="width:auto;flex-shrink:0">Copy</button>
+  </div>
 </div>
 
-<div class="section-title">How to use</div>
-<div class="card">
-  <ol style="margin-left:20px;line-height:2.2;color:var(--t2);font-size:14px">
+<div class="section-title">Step 2 — Add the shortcut</div>
+<div class="card" style="margin-bottom:24px">
+  <ol style="margin-left:20px;line-height:2.4;color:var(--t2);font-size:14px">
+    <li>
+      {% if icloud_url %}
+        Tap <strong style="color:var(--t1)"><a href="{{ icloud_url }}" style="color:var(--t1)">Add Shortcut</a></strong> to open it in iCloud
+      {% else %}
+        Open the shortcut link on your iPhone
+      {% endif %}
+    </li>
+    <li>On the shortcut preview page, tap the <strong style="color:var(--t1)">⋯</strong> (three dots) button in the top-right corner</li>
+    <li>In the first <strong style="color:var(--t1)">Text</strong> step, replace the existing value with your API key</li>
+    <li>Tap <strong style="color:var(--t1)">Done</strong>, then tap <strong style="color:var(--t1)">Add Shortcut</strong> to save it to your system</li>
+  </ol>
+  {% if icloud_url %}
+  <div style="text-align:center;margin-top:16px">
+    <a href="{{ icloud_url }}" class="btn btn-primary" style="width:auto;display:inline-block">Add Shortcut</a>
+  </div>
+  {% endif %}
+</div>
+
+<div class="section-title">Step 3 — Submit scores</div>
+<div class="card" style="margin-bottom:24px">
+  <ol style="margin-left:20px;line-height:2.4;color:var(--t2);font-size:14px">
     <li>Finish your Wordle puzzle</li>
     <li>Tap <strong style="color:var(--t1)">Share</strong> in the Wordle app</li>
     <li>Scroll down and tap <strong style="color:var(--t1)">Submit Wordle</strong></li>
@@ -32,4 +52,15 @@
 <div style="margin-top:16px">
   <a href="{{ url_for('ui.profile') }}" style="font-size:14px;color:var(--t2)">← Back to profile</a>
 </div>
+
+<script>
+function copyAuthKey() {
+  const el = document.getElementById('auth-key');
+  navigator.clipboard.writeText(el.value).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+  });
+}
+</script>
 {% endblock %}

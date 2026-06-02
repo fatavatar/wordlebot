@@ -70,6 +70,16 @@ def create_app(test_config: dict | None = None) -> Flask:
         from flask import send_from_directory
         return send_from_directory(app.static_folder, "favicon.ico", mimetype="image/x-icon")
 
+    # Serve manifest.json at root (Chrome's Web Share Target requires root-relative manifest)
+    @app.route("/manifest.json")
+    def manifest():
+        import os
+        from flask import Response
+        path = os.path.join(app.static_folder, "manifest.json")
+        with open(path) as f:
+            content = f.read()
+        return Response(content, mimetype="application/manifest+json")
+
     # Serve sw.js at root so its scope covers all app pages (not just /static/js/)
     @app.route("/sw.js")
     def service_worker():

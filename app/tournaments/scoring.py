@@ -139,6 +139,12 @@ def compute_standings(
     for s in scores:
         score_map[(s["user_id"], s["puzzle_number"])] = s
 
+    # Today counts toward standings once every member has submitted.
+    today_in_range = start <= today_puzzle <= end
+    all_submitted_today = today_in_range and all(
+        (m["id"], today_puzzle) in score_map for m in members
+    )
+
     results = []
     for member in members:
         uid = member["id"]
@@ -155,6 +161,9 @@ def compute_standings(
 
         for pnum in range(start, min(today_puzzle, end) + 1):
             row = score_map.get((uid, pnum))
+            # Completed days (before today) always count. Today counts only once
+            # everyone has submitted — partial results would leak scores via rank changes.
+            counts = pnum < today_puzzle or (pnum == today_puzzle and all_submitted_today)
 
             if row:
                 guesses = row["guesses"]
@@ -165,17 +174,19 @@ def compute_standings(
                     "comment": row.get("comment"),
                     "share_text": row.get("share_text"),
                 }
-                if guesses == 0:
-                    total_misses += 1
-                else:
-                    total_guesses += guesses
-                days_submitted += 1
+                if counts:
+                    if guesses == 0:
+                        total_misses += 1
+                    else:
+                        total_guesses += guesses
+                    days_submitted += 1
             elif pnum < join_puzzle:
                 # Late joiner penalty — days before they joined
-                total_misses += 1
                 daily_scores[pnum] = {"guesses": 0, "is_auto_miss": True, "late_join": True}
+                if counts:
+                    total_misses += 1
             else:
-                # Not yet submitted (today or future puzzles don't count yet)
+                # Not yet submitted
                 daily_scores[pnum] = {"guesses": None}
 
         results.append({
