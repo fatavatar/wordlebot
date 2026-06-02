@@ -1,0 +1,12 @@
+services:
+  web:
+    build: .
+    ports:
+      - "5000:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE: /data/wordle_tournament.db
+    volumes:
+      - ./wordle_tournament.db:/data/wordle_tournament.db
+    restart: unless-stopped
