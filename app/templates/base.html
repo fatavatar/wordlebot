@@ -6,10 +6,12 @@
   <title>{% block title %}Wordle Tournament{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/nyt-theme.css') }}">
   <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+  <link rel="apple-touch-icon" sizes="192x192" href="{{ url_for('static', filename='icons/icon-192.png') }}">
   <meta name="theme-color" content="#1a1a1b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.png') }}">
   {% block head %}{% endblock %}
 </head>
 <body class="{% if g.user and g.user.get('colorblind') %}colorblind{% endif %}">

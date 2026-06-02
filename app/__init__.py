@@ -64,6 +64,12 @@ def create_app(test_config: dict | None = None) -> Flask:
     app.register_blueprint(api_bp)
     app.register_blueprint(pwa_bp)
 
+    # Browsers request /favicon.ico automatically
+    @app.route("/favicon.ico")
+    def favicon():
+        from flask import send_from_directory
+        return send_from_directory(app.static_folder, "favicon.ico", mimetype="image/x-icon")
+
     # Serve sw.js at root so its scope covers all app pages (not just /static/js/)
     @app.route("/sw.js")
     def service_worker():
