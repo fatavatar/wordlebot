@@ -58,9 +58,44 @@ def submit():
     except Exception:
         return jsonify({"error": "Score already submitted for this puzzle."}), 409
 
+    # Fire push notifications for every active tournament this score belongs to
+    _notify_on_submit(user, parsed.puzzle_number, today_puzzle, cfg, comment)
+
     return jsonify({
         "status": "ok",
         "puzzle": parsed.puzzle_number,
         "guesses": parsed.guesses,
         "hardMode": parsed.hard_mode,
     })
+
+
+def _notify_on_submit(user: dict, puzzle_number: int, today_puzzle: int, cfg, comment: str | None = None):
+    from flask import current_app
+    from app.pwa.push_utils import notify_tournament_members, notify_all_scores_in, all_scores_submitted
+
+    tournaments = db.query_all(
+        """
+        SELECT t.id, t.name FROM tournaments t
+        JOIN tournament_members tm ON tm.tournament_id = t.id
+        WHERE tm.user_id = ?
+          AND ? BETWEEN t.start_puzzle AND t.start_puzzle + t.num_days - 1
+        """,
+        (user["id"], puzzle_number),
+    )
+    if not tournaments:
+        return
+
+    body = f"{user['name']} submitted their Wordle #{puzzle_number} score!"
+    if comment:
+        body += f' "{comment}"'
+
+    app = current_app._get_current_object()
+    for t in tournaments:
+        payload = {
+            "title": "New score submitted",
+            "body": body,
+            "url": f"/tournaments/{t['id']}",
+        }
+        notify_tournament_members(t["id"], user["id"], payload, cfg, app)
+        if all_scores_submitted(t["id"], puzzle_number):
+            notify_all_scores_in(t["id"], puzzle_number, cfg, app)

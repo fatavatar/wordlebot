@@ -290,7 +290,7 @@ def submit(tournament_id: int):
             )
 
         # Push notifications (stub — implemented in Phase 4)
-        _trigger_push_on_submit(tournament_id, parsed.puzzle_number, today_puzzle)
+        _trigger_push_on_submit(tournament_id, parsed.puzzle_number, today_puzzle, comment)
 
         flash("Score submitted!", "success")
         return redirect(url_for("tournaments.detail", tournament_id=tournament_id))
@@ -301,7 +301,7 @@ def submit(tournament_id: int):
                            share_text=share_text)
 
 
-def _trigger_push_on_submit(tournament_id: int, puzzle_number: int, today_puzzle: int):
+def _trigger_push_on_submit(tournament_id: int, puzzle_number: int, today_puzzle: int, comment: str | None = None):
     """Fire-and-forget push notifications to tournament members."""
     from flask import current_app
     from app.pwa.push_utils import (
@@ -312,9 +312,12 @@ def _trigger_push_on_submit(tournament_id: int, puzzle_number: int, today_puzzle
     cfg = get_config()
     app = current_app._get_current_object()
 
+    body = f"{g.user['name']} submitted their Wordle #{puzzle_number} score!"
+    if comment:
+        body += f' "{comment}"'
     payload = {
         "title": "New score submitted",
-        "body": f"{g.user['name']} submitted their Wordle #{puzzle_number} score!",
+        "body": body,
         "url": f"/tournaments/{tournament_id}",
     }
     notify_tournament_members(tournament_id, g.user["id"], payload, cfg, app)
