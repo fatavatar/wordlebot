@@ -50,7 +50,7 @@ body.colorblind {
 
 /* ── Reset ────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+html { font-size: 17px; -webkit-text-size-adjust: 100%; }
 body {
   font-family: var(--font-sans);
   background: var(--bg);
@@ -119,9 +119,9 @@ main {
 main.wide { max-width: 880px; }
 
 /* ── Typography ────────────────────────────────────────────── */
-h1 { font-size: 26px; font-weight: 900; letter-spacing: -0.01em; margin-bottom: 20px; }
-h2 { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
-h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+h1 { font-size: 30px; font-weight: 900; letter-spacing: -0.01em; margin-bottom: 20px; }
+h2 { font-size: 21px; font-weight: 700; margin-bottom: 12px; }
+h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
 p  { line-height: 1.55; margin-bottom: 12px; }
 
 .section-label {
@@ -261,7 +261,7 @@ input[readonly] {
 .card {
   border: 1px solid var(--t5);
   border-radius: var(--r);
-  padding: 16px;
+  padding: 20px;
   margin-bottom: 10px;
   background: var(--t7);
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -322,13 +322,13 @@ hr { border: none; border-top: 1px solid var(--t4); margin: 32px 0; }
 .day-grid-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
 .day-grid-cell {
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   color: white;
   flex-shrink: 0;
@@ -338,27 +338,27 @@ hr { border: none; border-top: 1px solid var(--t4); margin: 32px 0; }
 .day-grid-cell.guess-great { background: var(--color-correct); }
 .day-grid-cell.guess-ok    { background: var(--color-present); color: var(--t1); }
 .day-grid-cell.guess-bad   { background: var(--t3); }
-.day-grid-cell.hidden      { background: var(--t5); color: var(--t3); font-size: 15px; }
+.day-grid-cell.hidden      { background: var(--t5); color: var(--t3); font-size: 17px; }
 .day-grid-cell.future      { background: transparent; border: 1px dashed var(--t4); }
 
 /* ── Leaderboard ────────────────────────────────────────────── */
 .leaderboard { width: 100%; border-collapse: collapse; }
 
 .leaderboard thead th {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--t2);
-  padding: 8px 12px;
+  padding: 10px 14px;
   text-align: left;
   border-bottom: 2px solid var(--t4);
 }
 
 .leaderboard tbody td {
-  padding: 12px;
+  padding: 14px;
   border-bottom: 1px solid var(--t5);
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .leaderboard tbody tr:last-child td { border-bottom: none; }
@@ -366,7 +366,7 @@ hr { border: none; border-top: 1px solid var(--t4); margin: 32px 0; }
 .leaderboard tbody tr.me td { background: #fffcec; font-weight: 700; }
 
 .rank-num {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 900;
   color: var(--t3);
   width: 36px;
@@ -494,7 +494,7 @@ hr { border: none; border-top: 1px solid var(--t4); margin: 32px 0; }
   background: var(--t6);
   border: 1px solid var(--t5);
   border-radius: var(--r);
-  padding: 20px;
+  padding: 24px;
   margin-bottom: 32px;
 }
 
@@ -519,12 +519,12 @@ hr { border: none; border-top: 1px solid var(--t4); margin: 32px 0; }
 
 .today-puzzle-num {
   font-family: var(--font-serif);
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
 }
 
 .today-date {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--t2);
 }
 
@@ -534,15 +534,15 @@ hr { border: none; border-top: 1px solid var(--t4); margin: 32px 0; }
 }
 
 .progress-label {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--t2);
   margin-bottom: 6px;
 }
 
 .progress-bar-track {
-  height: 6px;
+  height: 8px;
   background: var(--t4);
-  border-radius: 3px;
+  border-radius: 4px;
   overflow: hidden;
 }
 
@@ -556,15 +556,15 @@ hr { border: none; border-top: 1px solid var(--t4); margin: 32px 0; }
 /* Submission card grid */
 .submission-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
 }
 
 .submission-card {
   background: var(--t7);
   border: 1px solid var(--t4);
   border-radius: var(--r);
-  padding: 12px;
+  padding: 16px;
   min-width: 0;
 }
 
@@ -588,7 +588,7 @@ hr { border: none; border-top: 1px solid var(--t4); margin: 32px 0; }
 }
 
 .sc-name {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
@@ -596,7 +596,7 @@ hr { border: none; border-top: 1px solid var(--t4); margin: 32px 0; }
 }
 
 .sc-result {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   white-space: nowrap;
   flex-shrink: 0;
@@ -607,22 +607,34 @@ hr { border: none; border-top: 1px solid var(--t4); margin: 32px 0; }
 .sc-result.hidden { color: var(--t3); }
 
 .emoji-grid {
-  font-size: 16px;
-  line-height: 1.4;
-  margin-bottom: 6px;
+  font-size: 20px;
+  line-height: 1.5;
+  margin-bottom: 8px;
   word-break: break-all;
 }
 
+/* Inline Wordle tile spans — respect colorblind CSS vars */
+.wt {
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+.wt.correct { background: var(--color-correct); }
+.wt.present { background: var(--color-present); }
+.wt.absent  { background: var(--color-absent); }
+
 .sc-comment {
-  font-size: 12px;
-  color: var(--t2);
+  font-size: 14px;
+  color: var(--t1);
   font-style: italic;
   line-height: 1.4;
   margin-top: 6px;
 }
 
 .sc-pending-label {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--t3);
   font-style: italic;
 }
@@ -645,9 +657,9 @@ hr { border: none; border-top: 1px solid var(--t4); margin: 32px 0; }
 
 /* ── Responsive ────────────────────────────────────────────── */
 @media (max-width: 520px) {
-  main { padding: 24px 14px 48px; }
-  h1 { font-size: 22px; }
-  .logo { font-size: 20px; }
+  main { padding: 24px 16px 48px; }
+  h1 { font-size: 26px; }
+  .logo { font-size: 21px; }
   .code-box { width: 44px; height: 54px; font-size: 26px; }
   .code-boxes { gap: 6px; }
 }

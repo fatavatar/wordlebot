@@ -169,7 +169,7 @@ def compute_standings(
                     total_misses += 1
                 else:
                     total_guesses += guesses
-                    days_submitted += 1
+                days_submitted += 1
             elif pnum < join_puzzle:
                 # Late joiner penalty — days before they joined
                 total_misses += 1

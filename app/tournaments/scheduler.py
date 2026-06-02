@@ -13,6 +13,12 @@ logger = logging.getLogger(__name__)
 
 
 def _run_auto_miss(app):
+    # Backfill immediately on startup, then run every 60 seconds
+    try:
+        with app.app_context():
+            _process_auto_misses(app)
+    except Exception:
+        logger.exception("Error in auto-miss scheduler (startup backfill)")
     while True:
         time.sleep(60)
         try:

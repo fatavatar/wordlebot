@@ -24,18 +24,20 @@ def send_push(subscription_info: dict, payload: dict, cfg: Config) -> bool:
             data=json.dumps(payload),
             vapid_private_key=cfg.VAPID_PRIVATE_KEY,
             vapid_claims={"sub": f"mailto:{cfg.VAPID_CLAIMS_EMAIL}"},
+            ttl=86400,  # WNS rejects TTL=0 (the pywebpush default)
         )
         return True
     except WebPushException as e:
-        if e.response is not None and e.response.status_code == 410:
-            # Subscription is gone — remove it
+        response = e.__dict__.get("response")
+        if response is not None and response.status_code == 410:
             logger.info("Removing stale push subscription: %s", subscription_info.get("endpoint", ""))
             db.execute(
                 "DELETE FROM push_subscriptions WHERE endpoint = ?",
                 (subscription_info.get("endpoint", ""),),
             )
         else:
-            logger.warning("Push failed: %s", e)
+            status = response.status_code if response is not None else "no response"
+            logger.warning("Push failed (%s): %s", status, e)
         return False
     except Exception as e:
         logger.warning("Push error: %s", e)

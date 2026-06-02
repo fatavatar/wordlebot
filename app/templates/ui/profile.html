@@ -134,47 +134,102 @@ document.getElementById('colorblind').addEventListener('change', function () {
   localStorage.setItem('colorblind', this.checked ? '1' : '0');
 });
 
-// Push notification toggle
-async function togglePush() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    document.getElementById('push-status').textContent = 'Push notifications are not supported in this browser.';
-    return;
-  }
-  const btn = document.getElementById('push-btn');
-  btn.disabled = true;
-  try {
-    const reg = await navigator.serviceWorker.ready;
-    const existing = await reg.pushManager.getSubscription();
-    if (existing) {
-      await existing.unsubscribe();
-      await fetch('/pwa/push/unsubscribe', { method: 'POST' });
-      document.getElementById('push-status').textContent = 'Notifications disabled.';
-      btn.textContent = 'Enable notifications';
-    } else {
-      const { publicKey } = await fetch('/pwa/vapid-public-key').then(r => r.json());
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey),
-      });
-      await fetch('/pwa/push/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sub.toJSON()),
-      });
-      document.getElementById('push-status').textContent = '✓ Notifications enabled!';
-      btn.textContent = 'Disable notifications';
-    }
-  } catch (e) {
-    document.getElementById('push-status').textContent = 'Error: ' + e.message;
-  }
-  btn.disabled = false;
-}
-
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
   const raw = atob(base64);
   return new Uint8Array([...raw].map(c => c.charCodeAt(0)));
 }
+
+function setPushStatus(msg, color) {
+  const el = document.getElementById('push-status');
+  el.textContent = msg;
+  el.style.color = color || 'var(--t2)';
+}
+
+async function initPushUI() {
+  const btn = document.getElementById('push-btn');
+
+  if (!window.isSecureContext) {
+    setPushStatus('Notifications require HTTPS. This page is on HTTP — open the app at its secure URL.');
+    btn.disabled = true;
+    return;
+  }
+
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    setPushStatus('Push notifications are not supported in this browser.');
+    btn.disabled = true;
+    return;
+  }
+
+  if (Notification.permission === 'denied') {
+    setPushStatus('Notifications are blocked for this site. Click the lock icon in your address bar → Notifications → Allow, then reload.', 'var(--color-absent)');
+    btn.textContent = 'Enable notifications';
+    btn.disabled = true;
+    return;
+  }
+
+  const reg = await navigator.serviceWorker.ready;
+  const existing = await reg.pushManager.getSubscription();
+  if (existing) {
+    setPushStatus('✓ Notifications are enabled.', 'var(--color-correct)');
+    btn.textContent = 'Disable notifications';
+  } else {
+    setPushStatus('');
+    btn.textContent = 'Enable notifications';
+  }
+}
+
+async function togglePush() {
+  const btn = document.getElementById('push-btn');
+  btn.disabled = true;
+
+  const reg = await navigator.serviceWorker.ready;
+  const existing = await reg.pushManager.getSubscription();
+
+  if (existing) {
+    // Disable
+    await existing.unsubscribe();
+    await fetch('/pwa/push/unsubscribe', { method: 'POST' });
+    setPushStatus('Notifications disabled.');
+    btn.textContent = 'Enable notifications';
+    btn.disabled = false;
+    return;
+  }
+
+  // Enable: request permission explicitly first so the browser shows its UI
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') {
+    if (perm === 'denied') {
+      setPushStatus('Notifications blocked. Click the lock icon in your address bar → Notifications → Allow, then reload.', 'var(--color-absent)');
+      btn.disabled = true;
+    } else {
+      setPushStatus('Permission not granted.');
+      btn.disabled = false;
+    }
+    return;
+  }
+
+  try {
+    const { publicKey } = await fetch('/pwa/vapid-public-key').then(r => r.json());
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicKey),
+    });
+    await fetch('/pwa/push/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(sub.toJSON()),
+    });
+    setPushStatus('✓ Notifications enabled!', 'var(--color-correct)');
+    btn.textContent = 'Disable notifications';
+  } catch (e) {
+    setPushStatus('Error subscribing: ' + e.message, 'var(--color-absent)');
+  }
+  btn.disabled = false;
+}
+
+// Set up button state on load
+initPushUI();
 </script>
 {% endblock %}

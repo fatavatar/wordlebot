@@ -123,7 +123,7 @@
               {% for line in ds.share_text.split('\n') %}
                 {% set stripped = line.strip() %}
                 {% if stripped and not stripped.lower().startswith('wordle') %}
-                  <div>{{ stripped }}</div>
+                  <div>{{ stripped | wordle_tiles }}</div>
                 {% endif %}
               {% endfor %}
             </div>
@@ -271,8 +271,7 @@
     {% endif %}
   {% endfor %}
 
-  <details style="border:1px solid var(--t5);border-radius:var(--r);margin-bottom:8px;overflow:hidden"
-           {% if loop.first %}open{% endif %}>
+  <details style="border:1px solid var(--t5);border-radius:var(--r);margin-bottom:8px;overflow:hidden" open>
     <summary style="padding:12px 16px;cursor:pointer;display:flex;align-items:center;
                     justify-content:space-between;background:var(--t6);list-style:none;
                     font-size:13px;font-weight:700;user-select:none">
@@ -319,7 +318,7 @@
                     {% for line in ds.share_text.split('\n') %}
                       {% set stripped = line.strip() %}
                       {% if stripped and not stripped.lower().startswith('wordle') %}
-                        <div>{{ stripped }}</div>
+                        <div>{{ stripped | wordle_tiles }}</div>
                       {% endif %}
                     {% endfor %}
                   </div>

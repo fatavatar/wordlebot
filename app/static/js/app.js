@@ -18,9 +18,9 @@ function previewScore(text) {
   };
 }
 
-// Register service worker
+// Register service worker at root so it controls all app pages
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/static/js/sw.js').catch(() => {});
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
 }
