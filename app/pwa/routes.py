@@ -1,8 +1,10 @@
 """PWA routes: manifest, service worker, push subscriptions, iOS Shortcut page."""
 
 import json
+import plistlib
+import uuid
 
-from flask import Blueprint, g, jsonify, render_template, request
+from flask import Blueprint, Response, g, jsonify, render_template, request
 
 from app import db
 from app.auth import require_login
@@ -47,6 +49,108 @@ def push_unsubscribe():
 @require_login
 def ios_shortcut():
     return render_template("pwa/ios_shortcut.html")
+
+
+@bp.route("/ios-shortcut/download")
+@require_login
+def ios_shortcut_download():
+    auth_key = g.user["auth_key"]
+    base_url = request.host_url.rstrip("/")
+    api_url = f"{base_url}/api/submit"
+    comment_uuid = str(uuid.uuid4()).upper()
+
+    shortcut = {
+        "WFWorkflowName": "Submit Wordle",
+        "WFWorkflowClientVersion": "1140.1",
+        "WFWorkflowMinimumClientVersion": 900,
+        "WFWorkflowMinimumClientVersionString": "900",
+        "WFWorkflowHasOutputFallback": False,
+        "WFWorkflowHasShortcutInputVariables": True,
+        "WFWorkflowInputContentItemClasses": ["WFTextContentItem"],
+        "WFWorkflowIcon": {
+            "WFWorkflowIconGlyphNumber": 59511,
+            "WFWorkflowIconStartColor": 431817727,
+        },
+        "WFWorkflowNoInputBehavior": {
+            "Name": "WFWorkflowNoInputBehaviorAskForInput",
+            "Parameters": {"ItemClass": "WFTextContentItem"},
+        },
+        "WFWorkflowTypes": [],
+        "WFWorkflowActions": [
+            # Ask for optional comment
+            {
+                "WFWorkflowActionIdentifier": "is.workflow.actions.ask",
+                "WFWorkflowActionParameters": {
+                    "WFAskActionPrompt": "Add a comment (optional)",
+                    "WFAskActionDefaultAnswer": "",
+                    "WFAskActionInputType": "Text",
+                    "UUID": comment_uuid,
+                    "CustomOutputName": "Comment",
+                },
+            },
+            # POST score + comment to API
+            {
+                "WFWorkflowActionIdentifier": "is.workflow.actions.downloadurl",
+                "WFWorkflowActionParameters": {
+                    "WFHTTPMethod": "POST",
+                    "WFURL": api_url,
+                    "WFHTTPBodyType": "JSON",
+                    "WFJSONValues": {
+                        "Value": {
+                            "WFDictionaryFieldValueItems": [
+                                {
+                                    "WFItemType": 0,
+                                    "WFKey": {"Value": {"string": "auth_key"}, "WFSerializationType": "WFTextTokenString"},
+                                    "WFValue": {"Value": {"string": auth_key}, "WFSerializationType": "WFTextTokenString"},
+                                },
+                                {
+                                    "WFItemType": 0,
+                                    "WFKey": {"Value": {"string": "score"}, "WFSerializationType": "WFTextTokenString"},
+                                    "WFValue": {
+                                        "Value": {
+                                            "attachmentsByRange": {"{0, 1}": {"Type": "ExtensionInput"}},
+                                            "string": "￼",
+                                        },
+                                        "WFSerializationType": "WFTextTokenString",
+                                    },
+                                },
+                                {
+                                    "WFItemType": 0,
+                                    "WFKey": {"Value": {"string": "comment"}, "WFSerializationType": "WFTextTokenString"},
+                                    "WFValue": {
+                                        "Value": {
+                                            "attachmentsByRange": {
+                                                "{0, 1}": {
+                                                    "OutputName": "Comment",
+                                                    "OutputUUID": comment_uuid,
+                                                    "Type": "ActionOutput",
+                                                }
+                                            },
+                                            "string": "￼",
+                                        },
+                                        "WFSerializationType": "WFTextTokenString",
+                                    },
+                                },
+                            ]
+                        },
+                        "WFSerializationType": "WFDictionaryFieldValue",
+                    },
+                },
+            },
+            # Open the app
+            {
+                "WFWorkflowActionIdentifier": "is.workflow.actions.openurl",
+                "WFWorkflowActionParameters": {"WFURL": base_url},
+            },
+        ],
+    }
+
+    data = plistlib.dumps(shortcut, fmt=plistlib.FMT_BINARY)
+    return Response(
+        data,
+        mimetype="application/octet-stream",
+        headers={"Content-Disposition": 'attachment; filename="Submit Wordle.shortcut"'},
+    )
 
 
 @bp.route("/notification-help")
