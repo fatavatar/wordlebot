@@ -53,6 +53,27 @@ def dashboard():
     )
 
 
+@bp.route("/submit")
+@require_login
+def submit_redirect():
+    if g.submitted_today:
+        return redirect(url_for("ui.dashboard"))
+    cfg = get_config()
+    today_puzzle = current_puzzle_number(cfg, tz=g.user["timezone"])
+    uid = g.user["id"]
+    my_ids = {
+        row["tournament_id"]
+        for row in db.query_all(
+            "SELECT tournament_id FROM tournament_members WHERE user_id = ?", (uid,)
+        )
+    }
+    for t in db.query_all("SELECT * FROM tournaments ORDER BY name"):
+        t = dict(t)
+        if t["id"] in my_ids and tournament_state(t, today_puzzle) == "ACTIVE":
+            return redirect(url_for("tournaments.submit", tournament_id=t["id"]))
+    return redirect(url_for("ui.dashboard"))
+
+
 @bp.route("/profile", methods=["GET", "POST"])
 @require_login
 def profile():

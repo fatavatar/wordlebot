@@ -108,6 +108,53 @@ header.site-header {
 .nav-links a { color: var(--t2); transition: color 0.12s; }
 .nav-links a:hover { color: var(--t1); }
 
+.hamburger-btn {
+  background: none;
+  border: none;
+  padding: 8px 6px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex-shrink: 0;
+  color: var(--t1);
+}
+.hamburger-btn span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  transition: opacity 0.15s;
+}
+
+.nav-drawer {
+  display: none;
+  position: absolute;
+  top: var(--header-h);
+  left: 0;
+  min-width: 180px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--r) var(--r);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  z-index: 200;
+}
+.nav-drawer.open { display: block; }
+.nav-drawer a {
+  display: block;
+  padding: 14px 24px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--t2);
+  transition: background 0.1s, color 0.1s;
+}
+.nav-drawer a:hover { background: var(--t6); color: var(--t1); }
+.nav-drawer a.nav-submitted { color: var(--color-correct); pointer-events: none; }
+
 /* ── Main ────────────────────────────────────────────── */
 main {
   flex: 1;

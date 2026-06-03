@@ -31,6 +31,14 @@ def require_login(f):
         if user is None:
             return redirect(url_for("auth.login", next=request.path))
         g.user = dict(user)
+        # Check if the user has already submitted today's puzzle (used by nav)
+        from app.config import get_config, current_puzzle_number
+        _cfg = get_config()
+        _today = current_puzzle_number(_cfg, tz=g.user.get("timezone", "UTC"))
+        g.submitted_today = bool(db.query_one(
+            "SELECT 1 FROM scores WHERE user_id = ? AND puzzle_number = ?",
+            (g.user["id"], _today),
+        ))
         # Redirect to registration if profile is incomplete
         if g.user["name"] is None and request.endpoint != "auth.register":
             return redirect(url_for("auth.register"))

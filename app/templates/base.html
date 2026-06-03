@@ -17,19 +17,51 @@
 <body class="{% if g.user and g.user.get('colorblind') %}colorblind{% endif %}">
 
 <header class="site-header">
-  <a href="{{ url_for('ui.dashboard') }}" class="logo" style="text-decoration:none;display:flex;align-items:center;gap:10px">
-    <img src="{{ url_for('static', filename='icons/icon-192.png') }}" alt="" width="36" height="36" style="border-radius:8px;flex-shrink:0">
-    <span>Wordle<span style="color:var(--color-correct)">beta</span><small>Compete daily</small></span>
-  </a>
-  <nav class="nav-links">
+  <div style="display:flex;align-items:center;gap:8px">
     {% if g.user %}
-      <a href="{{ url_for('ui.profile') }}">{{ g.user['name'] or g.user['email'] }}</a>
-      <a href="{{ url_for('auth.logout') }}">Log out</a>
-    {% else %}
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Menu" onclick="toggleNav(event)">
+        <span></span><span></span><span></span>
+      </button>
+    {% endif %}
+    <a href="{{ url_for('ui.dashboard') }}" class="logo" style="text-decoration:none;display:flex;align-items:center;gap:10px">
+      <img src="{{ url_for('static', filename='icons/icon-192.png') }}" alt="" width="36" height="36" style="border-radius:8px;flex-shrink:0">
+      <span>Wordle<span style="color:var(--color-correct)">beta</span><small>Compete daily</small></span>
+    </a>
+  </div>
+
+  {% if g.user %}
+  <div class="nav-drawer" id="nav-drawer">
+    <a href="{{ url_for('ui.dashboard') }}">Home</a>
+    <a href="{{ url_for('ui.submit_redirect') }}"{% if g.submitted_today %} class="nav-submitted"{% endif %}>
+      Submit{% if g.submitted_today %} ✓{% endif %}
+    </a>
+    <a href="{{ url_for('ui.profile') }}">Profile</a>
+  </div>
+  {% endif %}
+
+  <nav class="nav-links">
+    {% if not g.user %}
       <a href="{{ url_for('auth.login') }}">Log in</a>
     {% endif %}
   </nav>
 </header>
+
+<script>
+function toggleNav(e) {
+  e.stopPropagation();
+  document.getElementById('nav-drawer').classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+  var drawer = document.getElementById('nav-drawer');
+  if (drawer && !drawer.contains(e.target)) drawer.classList.remove('open');
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var drawer = document.getElementById('nav-drawer');
+    if (drawer) drawer.classList.remove('open');
+  }
+});
+</script>
 
 <main class="{% block main_class %}{% endblock %}">
   {% with messages = get_flashed_messages(with_categories=true) %}
