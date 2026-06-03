@@ -681,7 +681,7 @@ hr { border: none; border-top: 1px solid var(--t4); margin: 32px 0; }
   box-shadow: 0 1px 4px rgba(0,0,0,0.22);
 }
 
-.pill-toggle input:checked + .pill-slider { background: #f5793a; }
+.pill-toggle input:checked + .pill-slider { background: var(--color-correct); }
 .pill-toggle input:checked + .pill-slider::before { transform: translateX(22px); }
 
 /* ── Today section ────────────────────────────────────────────── */
