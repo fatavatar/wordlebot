@@ -18,7 +18,7 @@ def dashboard():
     uid = g.user["id"]
 
     # All tournaments
-    all_tournaments = db.query_all("SELECT * FROM tournaments ORDER BY name")
+    all_tournaments = db.query_all("SELECT * FROM tournaments ORDER BY start_puzzle DESC")
 
     my_ids = {
         row["tournament_id"]
@@ -44,7 +44,7 @@ def dashboard():
             if state in ("ACTIVE", "UPCOMING"):
                 open_tournaments.append(t)
 
-    for t in my_active:
+    for t in my_active + ended_tournaments:
         members = db.query_all("""
             SELECT u.id, u.name, u.email, u.timezone, tm.joined_at
             FROM tournament_members tm JOIN users u ON u.id = tm.user_id
@@ -86,7 +86,7 @@ def submit_redirect():
             "SELECT tournament_id FROM tournament_members WHERE user_id = ?", (uid,)
         )
     }
-    for t in db.query_all("SELECT * FROM tournaments ORDER BY name"):
+    for t in db.query_all("SELECT * FROM tournaments ORDER BY start_puzzle DESC"):
         t = dict(t)
         if t["id"] in my_ids and tournament_state(t, today_puzzle) == "ACTIVE":
             return redirect(url_for("tournaments.submit", tournament_id=t["id"]))

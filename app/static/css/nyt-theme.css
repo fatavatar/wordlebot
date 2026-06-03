@@ -377,6 +377,8 @@ input[readonly] {
 
 /* ── Cards ────────────────────────────────────────────── */
 .card {
+  position: relative;
+  overflow: hidden;
   border: 1px solid var(--t5);
   border-radius: var(--r);
   padding: 20px;
@@ -412,6 +414,21 @@ a.card:hover {
 .badge-active   { background: #edf7ed; color: #276c27; }
 .badge-upcoming { background: var(--t5); color: var(--t2); }
 .badge-ended    { background: var(--t5); color: var(--t3); }
+
+/* ── Tournament card: ghost day count ───────────────────────────────── */
+.card-day-ghost {
+  position: absolute;
+  bottom: -12px;
+  right: 12px;
+  font-size: 110px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--t1);
+  opacity: 0.06;
+  pointer-events: none;
+  user-select: none;
+  letter-spacing: -0.04em;
+}
 
 /* ── Tournament card: progress bar ─────────────────────────────────── */
 .tournament-progress {
