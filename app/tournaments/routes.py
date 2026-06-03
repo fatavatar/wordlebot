@@ -235,6 +235,18 @@ def leave(tournament_id: int):
     return redirect(url_for("ui.dashboard"))
 
 
+# ── Admin: delete tournament ──────────────────────────────────────────────────
+
+@bp.route("/<int:tournament_id>/delete", methods=["POST"])
+@require_admin
+def delete(tournament_id: int):
+    _get_tournament_or_404(tournament_id)  # 404 if not found
+    db.execute("DELETE FROM tournament_members WHERE tournament_id = ?", (tournament_id,))
+    db.execute("DELETE FROM tournaments WHERE id = ?", (tournament_id,))
+    flash("Tournament deleted.", "info")
+    return redirect(url_for("ui.dashboard"))
+
+
 # ── Score submission ──────────────────────────────────────────────────────────
 
 @bp.route("/<int:tournament_id>/submit", methods=["GET", "POST"])
