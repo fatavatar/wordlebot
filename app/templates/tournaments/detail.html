@@ -15,7 +15,18 @@
 <div style="display:flex;align-items:flex-start;justify-content:space-between;
             flex-wrap:wrap;gap:12px;margin-bottom:28px">
   <div>
-    <h1 style="margin-bottom:6px">{{ tournament.name }}</h1>
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:6px">
+      <h1 style="margin:0">{{ tournament.name }}</h1>
+      {% if g.user.is_admin %}
+        <form method="post" action="{{ url_for('tournaments.delete', tournament_id=tournament.id) }}"
+              onsubmit="return confirm('Delete \"{{ tournament.name }}\"? This cannot be undone.')">
+          <button type="submit" style="background:none;border:none;padding:0;cursor:pointer;
+                  font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+                  color:var(--error);opacity:0.5;font-family:inherit"
+                  onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.5'">Delete</button>
+        </form>
+      {% endif %}
+    </div>
     <div style="font-size:13px;color:var(--t2);display:flex;align-items:center;
                 gap:8px;flex-wrap:wrap">
       <span>Puzzle #{{ start }}–#{{ end }}</span>
@@ -44,13 +55,6 @@
          class="btn btn-primary btn-sm" style="width:auto">Submit Score →</a>
     {% elif is_member and state == 'ACTIVE' and viewer_submitted_today %}
       <span style="font-size:12px;color:var(--color-correct);font-weight:700">✓ Submitted today</span>
-    {% endif %}
-    {% if g.user.is_admin %}
-      <form method="post" action="{{ url_for('tournaments.delete', tournament_id=tournament.id) }}"
-            onsubmit="return confirm('Delete "{{ tournament.name }}"? This cannot be undone.')">
-        <button type="submit" class="btn btn-secondary btn-sm"
-                style="width:auto;color:var(--error);border-color:var(--error)">Delete</button>
-      </form>
     {% endif %}
   </div>
 </div>
