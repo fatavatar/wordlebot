@@ -218,8 +218,10 @@
           <th style="text-align:left;padding:4px 12px 4px 4px;font-size:11px;font-weight:700;
                      letter-spacing:0.06em;text-transform:uppercase;color:var(--t2)">Player</th>
           {% for pnum in puzzle_range %}
-          <th style="padding:4px 2px;font-size:10px;color:var(--t3);text-align:center;
-                     min-width:38px;font-weight:700;letter-spacing:0.04em">
+          <th data-jump="day-{{ pnum }}"
+              style="padding:4px 2px;font-size:10px;color:var(--t3);text-align:center;
+                     min-width:38px;font-weight:700;letter-spacing:0.04em;cursor:pointer"
+              title="Jump to Puzzle #{{ pnum }}">
             #{{ pnum }}
           </th>
           {% endfor %}
@@ -262,12 +264,11 @@
   </div>
 </div>
 
-{# Part B: Per-day accordion — past days (today shown above; ENDED shows all) #}
-{% set show_today_in_history = state == 'ENDED' %}
+{# Part B: Per-day accordion — all days including today (censoring via visible()) #}
 {% set history_puzzles = puzzle_range|reverse|list %}
 
 {% for pnum in history_puzzles %}
-  {% if pnum != today_puzzle or show_today_in_history %}
+  {% if true %}
 
   {# collect visible entries for this day #}
   {% set day_entries = [] %}
@@ -278,7 +279,7 @@
     {% endif %}
   {% endfor %}
 
-  <details style="border:1px solid var(--t5);border-radius:var(--r);margin-bottom:8px;overflow:hidden" open>
+  <details id="day-{{ pnum }}" style="border:1px solid var(--t5);border-radius:var(--r);margin-bottom:8px;overflow:hidden" open>
     <summary style="padding:12px 16px;cursor:pointer;display:flex;align-items:center;
                     justify-content:space-between;background:var(--t6);list-style:none;
                     font-size:13px;font-weight:700;user-select:none">
@@ -360,5 +361,18 @@
 <div style="margin-top:28px">
   <a href="{{ url_for('ui.dashboard') }}" style="font-size:13px;color:var(--t2)">← Back to dashboard</a>
 </div>
+
+<script>
+document.querySelectorAll('th[data-jump]').forEach(function(th) {
+  th.addEventListener('click', function() {
+    var target = document.getElementById(this.dataset.jump);
+    if (!target) return;
+    target.open = true;
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  th.addEventListener('mouseenter', function() { this.style.color = 'var(--t1)'; });
+  th.addEventListener('mouseleave', function() { this.style.color = 'var(--t3)'; });
+});
+</script>
 
 {% endblock %}
