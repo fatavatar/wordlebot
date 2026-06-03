@@ -344,6 +344,66 @@ a.card:hover {
 .badge-upcoming { background: var(--t5); color: var(--t2); }
 .badge-ended    { background: var(--t5); color: var(--t3); }
 
+/* ── Tournament card: progress bar ─────────────────────────────────── */
+.tournament-progress {
+  position: relative;
+  height: 6px;
+  background: var(--t5);
+  border-radius: 3px;
+  margin: 12px 0 8px;
+}
+.tournament-progress-fill {
+  height: 100%;
+  background: var(--color-correct);
+  border-radius: 3px;
+}
+.tournament-progress-label {
+  position: absolute;
+  right: 0;
+  top: -18px;
+  font-size: 11px;
+  color: var(--t3);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ── Tournament card: mini podium ───────────────────────────────────── */
+.podium-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  color: var(--t2);
+  margin: 4px 0 2px;
+}
+.podium-table thead th {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--t3);
+  padding: 0 4px 4px;
+}
+.podium-table tbody td { padding: 3px 4px; }
+.podium-you td { color: var(--t1); font-weight: 700; }
+.podium-rank { width: 28px; font-weight: 700; white-space: nowrap; }
+.podium-name { width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.podium-col-stat { width: 60px; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cheater-badge {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
+  color: #fff; background: var(--color-absent);
+  border-radius: 3px; padding: 1px 4px;
+}
+
+/* ── Tournament card: submit footer ─────────────────────────────────── */
+.card-submit-status {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--t5);
+  text-align: right;
+  min-height: 22px;
+}
+
 /* ── Divider ────────────────────────────────────────────── */
 hr { border: none; border-top: 1px solid var(--t4); margin: 32px 0; }
 

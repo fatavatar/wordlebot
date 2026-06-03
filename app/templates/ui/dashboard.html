@@ -20,13 +20,62 @@
 {% if my_active %}
 <div class="section-label">My Active Tournaments</div>
 {% for t in my_active %}
+  {% set end_puzzle = t.start_puzzle + t.num_days - 1 %}
+  {% set pct = ((t.day_number / t.num_days) * 100)|round|int if t.num_days > 0 else 0 %}
   <a href="{{ url_for('tournaments.detail', tournament_id=t.id) }}" class="card" style="display:block;color:inherit">
     <div class="card-header">
       <div>
         <strong style="font-size:15px">{{ t.name }}</strong>
-        <div style="font-size:12px;color:var(--t2)">Puzzle #{{ t.start_puzzle }}–{{ t.start_puzzle + t.num_days - 1 }}</div>
+        <div style="font-size:12px;color:var(--t2)">
+          Puzzle #{{ t.start_puzzle }}–{{ end_puzzle }}
+          &nbsp;·&nbsp;{{ t.member_count }} player{{ 's' if t.member_count != 1 else '' }}
+        </div>
       </div>
       <span class="badge badge-{{ t.state|lower }}">{{ t.state }}</span>
+    </div>
+
+    <div class="tournament-progress">
+      <span class="tournament-progress-label">
+        {% if t.day_number == 0 %}Upcoming{% else %}Day {{ t.day_number }} of {{ t.num_days }}{% endif %}
+      </span>
+      <div class="tournament-progress-fill" style="width:{{ pct }}%"></div>
+    </div>
+
+    {% if t.standings_preview and t.day_number > 0 %}
+      <table class="podium-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="podium-col-name"></th>
+            <th class="podium-col-stat">Misses</th>
+            <th class="podium-col-stat">Guesses</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in t.standings_preview[:3] %}
+          <tr class="{% if entry.user_id == g.user.id %}podium-you{% endif %}">
+            <td class="podium-rank">#{{ entry.rank }}</td>
+            <td class="podium-name">
+              {{ entry.name }}
+              {% if entry.user_id == g.user.id %}<span style="font-weight:400;font-size:11px"> (you)</span>{% endif %}
+              {% if entry.is_cheater %}<span class="cheater-badge">CHEATER</span>{% endif %}
+            </td>
+            <td class="podium-col-stat">{{ entry.total_misses }}</td>
+            <td class="podium-col-stat">{{ entry.total_guesses }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+
+    <div class="card-submit-status">
+      {% if g.submitted_today %}
+        <span style="color:var(--color-correct);font-size:12px;font-weight:700">✓ Submitted today</span>
+      {% elif t.state == 'ACTIVE' %}
+        <a href="{{ url_for('ui.submit_redirect') }}" style="font-size:12px;font-weight:700;color:var(--t1)"
+           onclick="event.stopPropagation()">Submit now →</a>
+      {% endif %}
     </div>
   </a>
 {% endfor %}

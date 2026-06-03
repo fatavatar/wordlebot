@@ -5,7 +5,7 @@ from flask import Blueprint, flash, g, redirect, render_template, request, url_f
 from app import db
 from app.auth import require_login
 from app.config import get_config, current_puzzle_number
-from app.tournaments.scoring import tournament_state
+from app.tournaments.scoring import tournament_state, compute_standings
 
 bp = Blueprint("ui", __name__)
 
@@ -43,6 +43,25 @@ def dashboard():
         else:
             if state in ("ACTIVE", "UPCOMING"):
                 open_tournaments.append(t)
+
+    for t in my_active:
+        members = db.query_all("""
+            SELECT u.id, u.name, u.email, u.timezone, tm.joined_at
+            FROM tournament_members tm JOIN users u ON u.id = tm.user_id
+            WHERE tm.tournament_id = ?
+        """, (t["id"],))
+        end_puzzle = t["start_puzzle"] + t["num_days"] - 1
+        scores = db.query_all(
+            "SELECT * FROM scores WHERE puzzle_number BETWEEN ? AND ?",
+            (t["start_puzzle"], end_puzzle),
+        )
+        t["standings_preview"] = compute_standings(
+            [dict(m) for m in members],
+            [dict(s) for s in scores],
+            t, today_puzzle, cfg,
+        )
+        t["member_count"] = len(members)
+        t["day_number"] = max(0, min(today_puzzle - t["start_puzzle"] + 1, t["num_days"]))
 
     return render_template(
         "ui/dashboard.html",
