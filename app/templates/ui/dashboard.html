@@ -23,7 +23,7 @@
   {% set end_puzzle = t.start_puzzle + t.num_days - 1 %}
   {% set pct = ((t.day_number / t.num_days) * 100)|round|int if t.num_days > 0 else 0 %}
   <a href="{{ url_for('tournaments.detail', tournament_id=t.id) }}" class="card" style="display:block;color:inherit">
-    <span class="card-day-ghost">{{ t.num_days }}</span>
+    <span class="card-day-ghost{% if t.num_days >= 25 %} season{% endif %}">{{ t.num_days }}</span>
     <div class="card-header">
       <div>
         <strong style="font-size:15px">{{ t.name }}</strong>
@@ -33,7 +33,7 @@
         </div>
       </div>
       <span class="badge badge-{{ t.state|lower }}">{{ t.state }}</span>
-      {% if t.num_days >= 25 %}<span class="badge badge-counts">Counts</span>{% endif %}
+      {% if t.num_days >= 25 %}<span class="badge badge-season">Season</span>{% endif %}
     </div>
 
     <div class="tournament-progress">
@@ -95,7 +95,7 @@
         <strong style="font-size:15px">{{ t.name }}</strong>
         <div style="font-size:12px;color:var(--t2);display:flex;align-items:center;gap:6px">
           Puzzle #{{ t.start_puzzle }}–{{ t.start_puzzle + t.num_days - 1 }}
-          {% if t.num_days >= 25 %}<span class="badge badge-counts">Counts</span>{% endif %}
+          {% if t.num_days >= 25 %}<span class="badge badge-season">Season</span>{% endif %}
         </div>
       </div>
       <form method="post" action="{{ url_for('tournaments.join', tournament_id=t.id) }}">
@@ -113,7 +113,7 @@
   {% set end_puzzle = t.start_puzzle + t.num_days - 1 %}
   <a href="{{ url_for('tournaments.detail', tournament_id=t.id) }}" class="card"
      style="display:block;color:inherit;opacity:0.75">
-    <span class="card-day-ghost">{{ t.num_days }}</span>
+    <span class="card-day-ghost{% if t.num_days >= 25 %} season{% endif %}">{{ t.num_days }}</span>
     <div class="card-header">
       <div>
         <strong style="font-size:15px">{{ t.name }}</strong>
@@ -123,7 +123,7 @@
         </div>
       </div>
       <span class="badge badge-ended">Ended</span>
-      {% if t.num_days >= 25 %}<span class="badge badge-counts">Counts</span>{% endif %}
+      {% if t.num_days >= 25 %}<span class="badge badge-season">Season</span>{% endif %}
     </div>
     {% if t.standings_preview %}
       <table class="podium-table" style="margin-top:10px">

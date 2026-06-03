@@ -63,7 +63,7 @@ body.dark {
   --surface: var(--t6);
 }
 body.dark .badge-active   { background: #1a3320; color: #6aaa64; }
-body.dark .badge-counts   { background: #2a2000; color: #c8a030; border-color: #5a4500; }
+body.dark .badge-season   { background: #2a2000; color: #c8a030; border-color: #5a4500; }
 body.dark .alert-error    { background: #2e1515; border-color: #5c2020; }
 body.dark .alert-success  { background: #1a3320; color: #6aaa64; border-color: #2a5530; }
 body.dark .alert-info     { background: var(--t6); border-color: var(--t4); }
@@ -415,7 +415,7 @@ a.card:hover {
 .badge-active   { background: #edf7ed; color: #276c27; }
 .badge-upcoming { background: var(--t5); color: var(--t2); }
 .badge-ended    { background: var(--t5); color: var(--t3); }
-.badge-counts   { background: #fef3cd; color: #7a5c00; border: 1px solid #e8d080; }
+.badge-season   { background: #fef3cd; color: #7a5c00; border: 1px solid #e8d080; }
 
 /* ── Tournament card: ghost day count ───────────────────────────────── */
 .card-day-ghost {
@@ -430,6 +430,10 @@ a.card:hover {
   pointer-events: none;
   user-select: none;
   letter-spacing: -0.04em;
+}
+.card-day-ghost.season {
+  color: #b8860b;
+  opacity: 0.18;
 }
 
 /* ── Tournament card: progress bar ─────────────────────────────────── */
