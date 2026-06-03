@@ -228,8 +228,14 @@ def compute_standings(
     # Sort: cheaters last, then fewest misses, then fewest total guesses
     results.sort(key=lambda r: (r["is_cheater"], r["total_misses"], r["total_guesses"]))
 
+    rank = 1
     for i, r in enumerate(results):
-        r["rank"] = i + 1
+        if i > 0:
+            prev = results[i - 1]
+            if (r["is_cheater"], r["total_misses"], r["total_guesses"]) != \
+               (prev["is_cheater"], prev["total_misses"], prev["total_guesses"]):
+                rank = i + 1
+        r["rank"] = rank
 
     return results
 
