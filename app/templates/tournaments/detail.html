@@ -28,19 +28,15 @@
       {% endif %}
     </div>
     <div style="font-size:13px;color:var(--t2);display:flex;align-items:center;
-                gap:8px;flex-wrap:wrap">
+                justify-content:space-between;flex-wrap:wrap;gap:6px">
       <span>Puzzle #{{ start }}–#{{ end }}</span>
-      <span>·</span>
       <span class="badge badge-{{ state|lower }}">{{ state }}</span>
       {% if tournament.num_days >= 25 %}<span class="badge badge-season">Season</span>{% endif %}
-      <span>·</span>
       <span>{{ total_members }} player{{ 's' if total_members != 1 else '' }}</span>
       {% if state != 'UPCOMING' and puzzle_range %}
-        <span>·</span>
         <span>{{ days_complete }}/{{ tournament.num_days }} days complete</span>
       {% endif %}
       {% if viewer_rank and standings %}
-        <span>·</span>
         <span style="font-weight:700;color:var(--t1)">You: #{{ viewer_rank }}</span>
       {% endif %}
     </div>
