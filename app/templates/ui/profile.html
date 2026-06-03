@@ -255,12 +255,81 @@ initPushUI();
     activeIdx = -1;
   }
 
+  var TZ_ALIASES = {
+    'Pacific/Auckland':  'new zealand nz auckland',
+    'Pacific/Chatham':   'new zealand nz chatham',
+    'NZ':                'new zealand nz auckland',
+    'NZ-CHAT':           'new zealand nz chatham',
+    'Australia/Sydney':  'australia sydney nsw',
+    'Australia/Melbourne': 'australia melbourne vic',
+    'Australia/Brisbane':  'australia brisbane qld',
+    'Australia/Perth':     'australia perth wa',
+    'Australia/Adelaide':  'australia adelaide sa',
+    'Australia/Darwin':    'australia darwin nt',
+    'America/New_York':    'usa us eastern et est edt new york',
+    'America/Chicago':     'usa us central ct cst cdt chicago',
+    'America/Denver':      'usa us mountain mt mst mdt denver',
+    'America/Los_Angeles': 'usa us pacific pt pst pdt los angeles',
+    'America/Anchorage':   'usa us alaska',
+    'Pacific/Honolulu':    'usa us hawaii',
+    'Europe/London':       'uk gb britain england london',
+    'Europe/Dublin':       'ireland dublin',
+    'Europe/Paris':        'france paris',
+    'Europe/Berlin':       'germany berlin',
+    'Europe/Amsterdam':    'netherlands holland amsterdam',
+    'Europe/Brussels':     'belgium brussels',
+    'Europe/Madrid':       'spain madrid',
+    'Europe/Rome':         'italy rome',
+    'Europe/Zurich':       'switzerland zurich',
+    'Europe/Stockholm':    'sweden stockholm',
+    'Europe/Oslo':         'norway oslo',
+    'Europe/Copenhagen':   'denmark copenhagen',
+    'Europe/Helsinki':     'finland helsinki',
+    'Europe/Warsaw':       'poland warsaw',
+    'Europe/Prague':       'czech republic prague',
+    'Europe/Budapest':     'hungary budapest',
+    'Europe/Bucharest':    'romania bucharest',
+    'Europe/Athens':       'greece athens',
+    'Europe/Istanbul':     'turkey istanbul',
+    'Asia/Tokyo':          'japan tokyo',
+    'Asia/Seoul':          'korea seoul',
+    'Asia/Shanghai':       'china beijing shanghai',
+    'Asia/Hong_Kong':      'hong kong',
+    'Asia/Singapore':      'singapore',
+    'Asia/Kolkata':        'india delhi mumbai ist',
+    'Asia/Dubai':          'uae dubai',
+    'Asia/Karachi':        'pakistan karachi',
+    'Asia/Dhaka':          'bangladesh dhaka',
+    'America/Toronto':     'canada toronto ontario',
+    'America/Vancouver':   'canada vancouver bc',
+    'America/Winnipeg':    'canada winnipeg manitoba',
+    'America/Halifax':     'canada halifax nova scotia',
+    'America/St_Johns':    'canada newfoundland',
+    'America/Sao_Paulo':   'brazil sao paulo',
+    'America/Buenos_Aires':'argentina buenos aires',
+    'America/Santiago':    'chile santiago',
+    'America/Lima':        'peru lima',
+    'America/Bogota':      'colombia bogota',
+    'America/Caracas':     'venezuela caracas',
+    'America/Mexico_City': 'mexico city',
+    'Africa/Johannesburg': 'south africa johannesburg',
+    'Africa/Cairo':        'egypt cairo',
+    'Africa/Lagos':        'nigeria lagos',
+    'Africa/Nairobi':      'kenya nairobi'
+  };
+
+  function tzMatches(tz, q) {
+    if (tz.toLowerCase().indexOf(q) !== -1) return true;
+    var aliases = TZ_ALIASES[tz];
+    return aliases ? aliases.indexOf(q) !== -1 : false;
+  }
+
   function renderDropdown(q) {
     filtered = [];
     var prevGroup = null;
     dropdown.innerHTML = '';
     TZ_LIST.forEach(function (tz) {
-      if (q && tz.toLowerCase().indexOf(q) === -1) return;
+      if (q && !tzMatches(tz, q)) return;
       var group = tz.indexOf('/') !== -1 ? tz.split('/')[0] : 'Other';
       if (group !== prevGroup) {
         var lbl = document.createElement('div');
