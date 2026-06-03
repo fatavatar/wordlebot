@@ -363,16 +363,41 @@
 </div>
 
 <script>
-document.querySelectorAll('th[data-jump]').forEach(function(th) {
-  th.addEventListener('click', function() {
-    var target = document.getElementById(this.dataset.jump);
+(function() {
+  var wrap = document.querySelector('.day-grid-wrap');
+  if (!wrap) return;
+  var table = wrap.querySelector('table');
+  var headerRow = table.querySelector('thead tr');
+
+  function jumpToDay(colIndex) {
+    var th = headerRow.cells[colIndex];
+    if (!th || !th.dataset.jump) return;
+    var target = document.getElementById(th.dataset.jump);
     if (!target) return;
     target.open = true;
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // header: click + hover highlight
+  Array.from(headerRow.cells).forEach(function(th, i) {
+    if (!th.dataset.jump) return;
+    th.addEventListener('click', function() { jumpToDay(i); });
+    th.addEventListener('mouseenter', function() { this.style.color = 'var(--t1)'; });
+    th.addEventListener('mouseleave', function() { this.style.color = 'var(--t3)'; });
   });
-  th.addEventListener('mouseenter', function() { this.style.color = 'var(--t1)'; });
-  th.addEventListener('mouseleave', function() { this.style.color = 'var(--t3)'; });
-});
+
+  // body cells: cursor + click via delegation
+  table.querySelectorAll('tbody td:not(:first-child)').forEach(function(td) {
+    td.style.cursor = 'pointer';
+  });
+  table.querySelector('tbody').addEventListener('click', function(e) {
+    var td = e.target.closest('td');
+    if (!td) return;
+    var colIndex = Array.from(td.parentNode.cells).indexOf(td);
+    if (colIndex === 0) return;
+    jumpToDay(colIndex);
+  });
+})();
 </script>
 
 {% endblock %}
