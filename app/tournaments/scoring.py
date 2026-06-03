@@ -28,6 +28,18 @@ _HEADER_RE = re.compile(
     re.MULTILINE | re.IGNORECASE,
 )
 
+# Matches a single row of 5 Wordle colour squares, including colorblind variants (🟦🟧),
+# optional variation selectors (U+FE0F), and optional \r before \n (CRLF line endings).
+_GRID_ROW_RE = re.compile(r"^(?:[⬛⬜🟨🟩🟫🟦🟧]️?){5}\r?$", re.MULTILINE)
+
+
+def _score_grid_valid(share_text: str | None, guesses: int) -> bool:
+    """Return False if share_text is present and its grid rows don't match guesses."""
+    if not share_text:
+        return True
+    expected = 6 if guesses == 0 else guesses
+    return len(_GRID_ROW_RE.findall(share_text)) == expected
+
 
 def parse_wordle_share(text: str, today_puzzle: int) -> ParsedScore:
     m = _HEADER_RE.search(text)
@@ -52,6 +64,14 @@ def parse_wordle_share(text: str, today_puzzle: int) -> ParsedScore:
     guesses = 0 if g == "X" else int(g)
     if guesses < 0 or guesses > 6:
         raise ParseError(f"Invalid guess count: {g}")
+
+    grid_rows = len(_GRID_ROW_RE.findall(text))
+    expected_rows = 6 if guesses == 0 else guesses
+    if grid_rows != expected_rows:
+        raise ParseError(
+            f"Grid has {grid_rows} row{'s' if grid_rows != 1 else ''} but the score says {g}/6. "
+            "Make sure you copied the full share text."
+        )
 
     return ParsedScore(
         puzzle_number=puzzle_number,
@@ -157,6 +177,7 @@ def compute_standings(
         total_misses = 0
         total_guesses = 0
         days_submitted = 0
+        is_cheater = False
         daily_scores: dict[int, dict] = {}
 
         for pnum in range(start, min(today_puzzle, end) + 1):
@@ -167,12 +188,16 @@ def compute_standings(
 
             if row:
                 guesses = row["guesses"]
+                grid_invalid = not _score_grid_valid(row.get("share_text"), guesses)
+                if grid_invalid:
+                    is_cheater = True
                 daily_scores[pnum] = {
                     "guesses": guesses,
                     "is_auto_miss": bool(row["is_auto_miss"]),
                     "submitted_at": row["submitted_at"],
                     "comment": row.get("comment"),
                     "share_text": row.get("share_text"),
+                    "grid_invalid": grid_invalid,
                 }
                 if counts:
                     if guesses == 0:
@@ -196,11 +221,12 @@ def compute_standings(
             "total_misses": total_misses,
             "total_guesses": total_guesses,
             "days_submitted": days_submitted,
+            "is_cheater": is_cheater,
             "daily_scores": daily_scores,
         })
 
-    # Sort: fewest misses first, then fewest total guesses
-    results.sort(key=lambda r: (r["total_misses"], r["total_guesses"]))
+    # Sort: cheaters last, then fewest misses, then fewest total guesses
+    results.sort(key=lambda r: (r["is_cheater"], r["total_misses"], r["total_guesses"]))
 
     for i, r in enumerate(results):
         r["rank"] = i + 1

@@ -105,6 +105,10 @@
             {% if entry.user_id == g.user.id %}
               <span style="font-size:10px;color:var(--t2);font-weight:400"> (you)</span>
             {% endif %}
+            {% if entry.is_cheater %}
+              <span style="font-size:10px;font-weight:700;color:#fff;background:var(--color-absent);
+                           border-radius:3px;padding:1px 5px;margin-left:4px;letter-spacing:0.04em">CHEATER</span>
+            {% endif %}
           </span>
           {% if submitted and can_see %}
             {% if g_val == 0 %}
@@ -178,6 +182,10 @@
           {{ entry.name }}
           {% if entry.user_id == g.user.id %}
             <span style="font-size:11px;color:var(--t2);margin-left:4px">(you)</span>
+          {% endif %}
+          {% if entry.is_cheater %}
+            <span style="font-size:10px;font-weight:700;color:#fff;background:var(--color-absent);
+                         border-radius:3px;padding:1px 5px;margin-left:6px;letter-spacing:0.04em">CHEATER</span>
           {% endif %}
         </td>
         <td style="color:{% if entry.total_misses > 0 %}var(--color-absent){% else %}var(--t2){% endif %};

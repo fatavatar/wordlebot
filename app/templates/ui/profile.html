@@ -97,6 +97,9 @@
 <button id="push-btn" type="button" class="btn btn-secondary btn-sm" style="width:auto" onclick="togglePush()">
   Enable notifications
 </button>
+<div id="pwa-required-note" style="margin-top:8px;font-size:12px;color:var(--t2);display:none">
+  The app must be installed to your home screen to enable notifications.
+</div>
 <div style="margin-top:10px;font-size:12px;color:var(--t3)">
   <a href="{{ url_for('pwa.notification_help') }}">Having trouble? →</a>
 </div>
@@ -126,6 +129,12 @@ function setPushStatus(msg, color) {
 
 async function initPushUI() {
   const btn = document.getElementById('push-btn');
+  const isPWA = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if (!isPWA) {
+    document.getElementById('pwa-required-note').style.display = 'block';
+    btn.disabled = true;
+    return;
+  }
 
   if (!window.isSecureContext) {
     setPushStatus('Notifications require HTTPS. This page is on HTTP — open the app at its secure URL.');
