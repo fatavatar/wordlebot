@@ -21,6 +21,7 @@
       <span>Puzzle #{{ start }}–#{{ end }}</span>
       <span>·</span>
       <span class="badge badge-{{ state|lower }}">{{ state }}</span>
+      {% if tournament.num_days >= 25 %}<span class="badge badge-counts">Counts</span>{% endif %}
       <span>·</span>
       <span>{{ total_members }} player{{ 's' if total_members != 1 else '' }}</span>
       {% if state != 'UPCOMING' and puzzle_range %}
