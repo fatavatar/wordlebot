@@ -78,15 +78,6 @@
     </div>
   </div>
 
-  {% if is_member and not viewer_submitted_today %}
-    <div style="margin-bottom:16px;padding:12px 14px;background:var(--t7);
-                border:1px dashed var(--t4);border-radius:var(--r);
-                display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <span style="font-size:13px;color:var(--t2)">You haven't submitted yet today.</span>
-      <a href="{{ url_for('tournaments.submit', tournament_id=tournament.id) }}"
-         class="btn btn-primary btn-sm" style="width:auto;flex-shrink:0">Submit now →</a>
-    </div>
-  {% endif %}
 
   <div class="submission-cards">
     {% for entry in standings %}
