@@ -102,6 +102,7 @@ def profile():
         name = request.form.get("name", "").strip()
         tz = request.form.get("timezone", "UTC").strip()
         colorblind = 1 if request.form.get("colorblind") else 0
+        dark_mode  = 1 if request.form.get("dark_mode")  else 0
 
         errors = []
         if not name:
@@ -113,8 +114,8 @@ def profile():
             return render_template("ui/profile.html", errors=errors, timezones=timezones)
 
         db.execute(
-            "UPDATE users SET name = ?, timezone = ?, colorblind = ? WHERE id = ?",
-            (name, tz, colorblind, g.user["id"]),
+            "UPDATE users SET name = ?, timezone = ?, colorblind = ?, dark_mode = ? WHERE id = ?",
+            (name, tz, colorblind, dark_mode, g.user["id"]),
         )
         # Refresh g.user
         updated = db.query_one("SELECT * FROM users WHERE id = ?", (g.user["id"],))

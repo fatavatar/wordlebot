@@ -48,6 +48,31 @@ body.colorblind {
   --color-present: var(--cb-present);
 }
 
+/* Dark mode — invert the tone scale */
+body.dark {
+  --t1: #e8e8e8;
+  --t2: #818384;
+  --t3: #565758;
+  --t4: #3a3a3c;
+  --t5: #272729;
+  --t6: #1a1a1b;
+  --t7: #121213;
+  --bg:      var(--t7);
+  --text:    var(--t1);
+  --border:  var(--t4);
+  --surface: var(--t6);
+}
+body.dark .badge-active   { background: #1a3320; color: #6aaa64; }
+body.dark .alert-error    { background: #2e1515; border-color: #5c2020; }
+body.dark .alert-success  { background: #1a3320; color: #6aaa64; border-color: #2a5530; }
+body.dark .alert-info     { background: var(--t6); border-color: var(--t4); }
+body.dark .tz-warning     { background: #2a2210; border-color: #6b5500; color: #c8a030; }
+body.dark .btn-primary              { color: var(--t7); }
+body.dark .leaderboard tbody tr.me td { background: #2a2810; }
+body.dark .submission-card.is-you   { background: #1e1e10; border-color: #4a4420; }
+body.dark .rank-2 .rank-num         { color: #6a6a6c; }
+body.dark .pill-slider::before      { background: var(--t7); }
+
 /* ── Reset ────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 17px; -webkit-text-size-adjust: 100%; }

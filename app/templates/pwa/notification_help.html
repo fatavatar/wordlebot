@@ -3,7 +3,7 @@
 
 {% block content %}
 <h1>Enable Notifications</h1>
-<p style="color:var(--color-tone-2);margin-bottom:24px">
+<p style="color:var(--t2);margin-bottom:24px">
   Push notifications require the app to be installed and notifications to be allowed in your device settings.
 </p>
 
@@ -34,12 +34,12 @@
     <li>Reload the page, then click <strong>Enable notifications</strong> in your profile</li>
     <li>If no permission prompt appeared, notifications may have been previously blocked — step 1–2 above resets that</li>
   </ol>
-  <p style="font-size:13px;color:var(--color-tone-2);margin:8px 0 0">
+  <p style="font-size:13px;color:var(--t2);margin:8px 0 0">
     <strong>Also check Windows settings:</strong> Start → Settings → System → Notifications → make sure Edge is allowed to send notifications.
   </p>
 </div>
 
 <div style="margin-top:16px">
-  <a href="{{ url_for('ui.profile') }}" style="font-size:14px;color:var(--color-tone-2)">← Back to profile</a>
+  <a href="{{ url_for('ui.profile') }}" style="font-size:14px;color:var(--t2)">← Back to profile</a>
 </div>
 {% endblock %}

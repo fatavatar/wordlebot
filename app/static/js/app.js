@@ -1,8 +1,7 @@
-// Apply colorblind class from localStorage before render (avoids flash)
+// Apply appearance classes from localStorage before render (avoids flash)
 (function () {
-  if (localStorage.getItem('colorblind') === '1') {
-    document.body.classList.add('colorblind');
-  }
+  if (localStorage.getItem('colorblind') === '1') document.body.classList.add('colorblind');
+  if (localStorage.getItem('dark_mode') === '1')  document.body.classList.add('dark');
 })();
 
 // Wordle share text client-side parser for live preview

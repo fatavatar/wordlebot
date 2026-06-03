@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
     email       TEXT UNIQUE NOT NULL,
     timezone    TEXT NOT NULL DEFAULT 'UTC',
     colorblind  INTEGER NOT NULL DEFAULT 0,
+    dark_mode   INTEGER NOT NULL DEFAULT 0,
     is_admin    INTEGER NOT NULL DEFAULT 0,
     auth_key    TEXT UNIQUE NOT NULL,
     created_at  TEXT NOT NULL DEFAULT (datetime('now'))

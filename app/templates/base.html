@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   {% block head %}{% endblock %}
 </head>
-<body class="{% if g.user and g.user.get('colorblind') %}colorblind{% endif %}">
+<body class="{% if g.user and g.user.get('colorblind') %}colorblind{% endif %}{% if g.user and g.user.get('dark_mode') %} dark{% endif %}">
 
 <header class="site-header">
   <div style="display:flex;align-items:center;gap:8px">

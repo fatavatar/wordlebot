@@ -72,7 +72,19 @@
     </div>
   </div>
 
-  <button type="submit" class="btn btn-primary">Save changes</button>
+  <div class="cb-toggle-card" style="margin-top:10px" onclick="document.getElementById('dark_mode').click()">
+    <div class="cb-toggle-info">
+      <div class="cb-toggle-title">Dark mode</div>
+      <div class="cb-toggle-desc">Easy on the eyes in low-light conditions.</div>
+    </div>
+    <label class="pill-toggle" onclick="event.stopPropagation()">
+      <input type="checkbox" id="dark_mode" name="dark_mode"
+             {% if g.user['dark_mode'] %}checked{% endif %}>
+      <span class="pill-slider"></span>
+    </label>
+  </div>
+
+  <button type="submit" class="btn btn-primary" style="margin-top:16px">Save changes</button>
 </form>
 
 <hr>
@@ -114,6 +126,14 @@ if (cbStored !== null) cbEl.checked = cbStored === '1';
 cbEl.addEventListener('change', function () {
   document.body.classList.toggle('colorblind', this.checked);
   localStorage.setItem('colorblind', this.checked ? '1' : '0');
+});
+
+var dmEl = document.getElementById('dark_mode');
+var dmStored = localStorage.getItem('dark_mode');
+if (dmStored !== null) dmEl.checked = dmStored === '1';
+dmEl.addEventListener('change', function () {
+  document.body.classList.toggle('dark', this.checked);
+  localStorage.setItem('dark_mode', this.checked ? '1' : '0');
 });
 
 function urlBase64ToUint8Array(base64String) {

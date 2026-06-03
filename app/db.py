@@ -40,6 +40,10 @@ def init_db():
     schema = Path(__file__).parent / "db" / "schema.sql"
     conn = get_db()
     conn.executescript(schema.read_text())
+    try:
+        conn.execute("ALTER TABLE users ADD COLUMN dark_mode INTEGER NOT NULL DEFAULT 0")
+    except Exception:
+        pass  # column already exists
     conn.commit()
 
 
