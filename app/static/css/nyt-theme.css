@@ -277,6 +277,50 @@ input[readonly] {
 .alert-success { background: #edf7ed; color: #276c27; border-color: #c5e5c5; }
 .alert-info    { background: var(--t6); color: var(--t1); border-color: var(--t4); }
 
+.tz-warning {
+  background: #fffbea;
+  border: 1px solid #f0d060;
+  border-radius: var(--r);
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #7a5c00;
+  margin-bottom: 6px;
+}
+.tz-warning a { font-weight: 700; color: inherit; text-decoration: underline; margin-left: 6px; }
+
+.tz-combobox { position: relative; }
+.tz-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0; right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--r) var(--r);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  z-index: 100;
+}
+.tz-dropdown.open { display: block; }
+.tz-group-label {
+  padding: 6px 12px 2px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--t3);
+}
+.tz-option {
+  padding: 7px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--t1);
+}
+.tz-option:hover, .tz-option.tz-active { background: var(--t6); }
+.tz-option.tz-selected { font-weight: 700; }
+
 /* ── Auth code boxes ────────────────────────────────────────────── */
 .code-boxes {
   display: flex;

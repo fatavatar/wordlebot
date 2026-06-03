@@ -24,24 +24,18 @@
   </div>
 
   <div class="form-group">
-    <label for="timezone">Timezone <span style="font-weight:400;text-transform:none;letter-spacing:0">(sets your daily deadline)</span></label>
-    <select id="timezone" name="timezone">
-      {% set regions = namespace(prev='') %}
-      {% for tz in timezones %}
-        {% set parts = tz.split('/') %}
-        {% set region = parts[0] if parts|length > 1 else 'Other' %}
-        {% if region != regions.prev %}
-          {% if regions.prev %}
-            </optgroup>
-          {% endif %}
-          <optgroup label="{{ region }}">
-          {% set regions.prev = region %}
-        {% endif %}
-        <option value="{{ tz }}" {% if tz == g.user['timezone'] %}selected{% endif %}>{{ tz }}</option>
-      {% endfor %}
-      </optgroup>
-    </select>
+    <label for="tz-input">Timezone <span style="font-weight:400;text-transform:none;letter-spacing:0">(sets your daily deadline)</span></label>
+    <div id="tz-warning" class="tz-warning" style="display:none">
+      Your browser is in <strong id="tz-detected-name"></strong> but your profile is set to <strong id="tz-saved-name"></strong>.
+      <a href="#" id="tz-use-detected">Use detected →</a>
+    </div>
+    <div class="tz-combobox">
+      <input type="text" id="tz-input" autocomplete="off" placeholder="Search timezones…">
+      <div class="tz-dropdown" id="tz-dropdown"></div>
+    </div>
+    <input type="hidden" name="timezone" id="timezone" value="{{ g.user['timezone'] }}">
   </div>
+  <script>var TZ_LIST = {{ timezones | tojson }};</script>
 
   <!-- ── Colorblind Mode ── -->
   <div class="form-group">
@@ -112,8 +106,12 @@
 
 {% block scripts %}
 <script>
-// Colorblind toggle — instant preview + localStorage sync
-document.getElementById('colorblind').addEventListener('change', function () {
+// Sync checkbox to localStorage (visual state may differ from DB if not saved)
+var cbEl = document.getElementById('colorblind');
+var cbStored = localStorage.getItem('colorblind');
+if (cbStored !== null) cbEl.checked = cbStored === '1';
+
+cbEl.addEventListener('change', function () {
   document.body.classList.toggle('colorblind', this.checked);
   localStorage.setItem('colorblind', this.checked ? '1' : '0');
 });
@@ -221,5 +219,98 @@ async function togglePush() {
 
 // Set up button state on load
 initPushUI();
+
+// ── Timezone combobox ──────────────────────────────────────────────
+(function () {
+  var input   = document.getElementById('tz-input');
+  var hidden  = document.getElementById('timezone');
+  var dropdown = document.getElementById('tz-dropdown');
+  var warning = document.getElementById('tz-warning');
+  var activeIdx = -1;
+  var filtered = [];
+
+  function setVal(tz) {
+    hidden.value = tz;
+    input.value  = tz;
+    activeIdx = -1;
+  }
+
+  function renderDropdown(q) {
+    filtered = [];
+    var prevGroup = null;
+    dropdown.innerHTML = '';
+    TZ_LIST.forEach(function (tz) {
+      if (q && tz.toLowerCase().indexOf(q) === -1) return;
+      var group = tz.indexOf('/') !== -1 ? tz.split('/')[0] : 'Other';
+      if (group !== prevGroup) {
+        var lbl = document.createElement('div');
+        lbl.className = 'tz-group-label';
+        lbl.textContent = group;
+        dropdown.appendChild(lbl);
+        prevGroup = group;
+      }
+      var opt = document.createElement('div');
+      opt.className = 'tz-option' + (tz === hidden.value ? ' tz-selected' : '');
+      opt.textContent = tz.replace(/^[^/]+\//, '').replace(/_/g, ' ');
+      opt.dataset.value = tz;
+      opt.addEventListener('mousedown', function (e) {
+        e.preventDefault(); // keep focus on input
+        setVal(tz);
+        closeDropdown();
+      });
+      dropdown.appendChild(opt);
+      filtered.push(opt);
+    });
+    dropdown.classList.toggle('open', filtered.length > 0 || !q);
+    activeIdx = -1;
+  }
+
+  function closeDropdown() {
+    dropdown.classList.remove('open');
+    activeIdx = -1;
+  }
+
+  function highlight(idx) {
+    filtered.forEach(function (el) { el.classList.remove('tz-active'); });
+    if (idx >= 0 && idx < filtered.length) {
+      filtered[idx].classList.add('tz-active');
+      filtered[idx].scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  input.addEventListener('focus', function () { renderDropdown(input.value.toLowerCase()); });
+  input.addEventListener('input', function () { renderDropdown(this.value.toLowerCase()); });
+  input.addEventListener('blur',  function () { setTimeout(closeDropdown, 150); });
+
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowDown')  { e.preventDefault(); highlight(Math.min(activeIdx + 1, filtered.length - 1)); activeIdx = Math.min(activeIdx + 1, filtered.length - 1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); highlight(Math.max(activeIdx - 1, 0)); activeIdx = Math.max(activeIdx - 1, 0); }
+    else if (e.key === 'Enter' && activeIdx >= 0) { e.preventDefault(); setVal(filtered[activeIdx].dataset.value); closeDropdown(); }
+    else if (e.key === 'Escape') { closeDropdown(); input.value = hidden.value; }
+  });
+
+  // ── Auto-detect ───────────────────────────────────────────────────
+  var detected = (Intl && Intl.DateTimeFormat) ? Intl.DateTimeFormat().resolvedOptions().timeZone : null;
+  var saved = hidden.value;
+
+  // Initialise display value
+  setVal(saved);
+
+  if (detected && TZ_LIST.indexOf(detected) !== -1) {
+    if (saved === 'UTC' || saved === '') {
+      setVal(detected);
+    } else if (detected !== saved) {
+      document.getElementById('tz-detected-name').textContent = detected;
+      document.getElementById('tz-saved-name').textContent = saved;
+      warning.style.display = 'block';
+    }
+  }
+
+  document.getElementById('tz-use-detected').addEventListener('click', function (e) {
+    e.preventDefault();
+    setVal(detected);
+    warning.style.display = 'none';
+  });
+})();
 </script>
 {% endblock %}
