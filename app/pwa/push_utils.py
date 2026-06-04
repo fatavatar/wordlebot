@@ -78,7 +78,7 @@ def notify_tournament_members(
             for member in members:
                 send_push_to_user(member["user_id"], payload, cfg)
 
-    threading.Thread(target=_send, daemon=True).start()
+    threading.Thread(target=_send, daemon=False).start()
 
 
 def notify_all_scores_in(tournament_id: int, puzzle_number: int, cfg: Config, app) -> None:
@@ -100,7 +100,7 @@ def notify_all_scores_in(tournament_id: int, puzzle_number: int, cfg: Config, ap
             for member in members:
                 send_push_to_user(member["user_id"], payload, cfg)
 
-    threading.Thread(target=_send, daemon=True).start()
+    threading.Thread(target=_send, daemon=False).start()
 
 
 def all_scores_submitted(tournament_id: int, puzzle_number: int) -> bool:
