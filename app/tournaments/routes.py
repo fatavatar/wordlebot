@@ -222,6 +222,7 @@ def join(tournament_id: int):
     if state == "ACTIVE":
         _apply_late_join_misses(tournament_id, g.user["id"], t)
 
+    _notify_member_joined(tournament_id, t["name"], g.user["name"], g.user["id"])
     flash("You've joined the tournament!", "success")
     return redirect(url_for("tournaments.detail", tournament_id=tournament_id))
 
@@ -235,6 +236,18 @@ def leave(tournament_id: int):
     )
     flash("You've left the tournament.", "info")
     return redirect(url_for("ui.dashboard"))
+
+
+def _notify_member_joined(tournament_id: int, tournament_name: str, joiner_name: str, joiner_id: int) -> None:
+    from flask import current_app
+    from app.pwa.push_utils import notify_tournament_members
+    cfg = get_config()
+    app = current_app._get_current_object()
+    notify_tournament_members(tournament_id, joiner_id, {
+        "title": f"{joiner_name} joined!",
+        "body": f"{joiner_name} just joined {tournament_name}.",
+        "url": f"/tournaments/{tournament_id}",
+    }, cfg, app)
 
 
 def _notify_new_tournament(tournament_id: int, name: str) -> None:
