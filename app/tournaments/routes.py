@@ -99,7 +99,9 @@ def new():
             "INSERT INTO tournaments (name, start_puzzle, num_days, created_by) VALUES (?, ?, ?, ?)",
             (name, start_puzzle, num_days, g.user["id"]),
         )
-        return redirect(url_for("tournaments.detail", tournament_id=cur.lastrowid))
+        tournament_id = cur.lastrowid
+        _notify_new_tournament(tournament_id, name)
+        return redirect(url_for("tournaments.detail", tournament_id=tournament_id))
 
     return render_template("tournaments/create.html", today_puzzle=today_puzzle, form={})
 
@@ -233,6 +235,18 @@ def leave(tournament_id: int):
     )
     flash("You've left the tournament.", "info")
     return redirect(url_for("ui.dashboard"))
+
+
+def _notify_new_tournament(tournament_id: int, name: str) -> None:
+    from flask import current_app
+    from app.pwa.push_utils import notify_all_users
+    cfg = get_config()
+    app = current_app._get_current_object()
+    notify_all_users({
+        "title": "New tournament created!",
+        "body": f'"{name}" is open — join now.',
+        "url": f"/tournaments/{tournament_id}",
+    }, cfg, app)
 
 
 # ── Admin: delete tournament ──────────────────────────────────────────────────

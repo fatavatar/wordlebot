@@ -61,6 +61,17 @@ def send_push_to_user(user_id: int, payload: dict, cfg: Config) -> int:
     return sent
 
 
+def notify_all_users(payload: dict, cfg: Config, app) -> None:
+    """Notify every user with a push subscription (fire-and-forget thread)."""
+    def _send():
+        with app.app_context():
+            user_ids = db.query_all("SELECT DISTINCT user_id FROM push_subscriptions")
+            for row in user_ids:
+                send_push_to_user(row["user_id"], payload, cfg)
+
+    threading.Thread(target=_send, daemon=False).start()
+
+
 def notify_tournament_members(
     tournament_id: int,
     exclude_user_id: int,
