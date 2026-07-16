@@ -171,10 +171,50 @@ def detail(tournament_id: int):
         start <= today_puzzle <= end
         and submitted_today_count == len(members)
     )
-    days_complete = len([
+    counted_days = [
         p for p in puzzle_range
         if p < today_puzzle or (p == today_puzzle and all_submitted_today)
-    ]) if puzzle_range else 0
+    ] if puzzle_range else []
+    days_complete = len(counted_days)
+
+    # ── "Behind the leader" chart data ────────────────────────────────
+    # Cumulative penalty per player over completed days (a miss = 7 strokes),
+    # re-expressed each day as strokes behind that day's leader. Only days that
+    # count toward standings are included (all past days, plus today once every
+    # member has submitted), so no score is revealed before it would be anyway.
+    MISS_PENALTY = 7
+    cumulative = {e["user_id"]: 0 for e in standings}
+    per_day_cum = {e["user_id"]: [] for e in standings}
+    for p in counted_days:
+        for e in standings:
+            gv = e["daily_scores"].get(p, {}).get("guesses")
+            if gv == 0:
+                cumulative[e["user_id"]] += MISS_PENALTY
+            elif gv is not None:
+                cumulative[e["user_id"]] += gv
+            per_day_cum[e["user_id"]].append(cumulative[e["user_id"]])
+
+    behind = {uid: [] for uid in per_day_cum}
+    for i in range(len(counted_days)):
+        leader = min(per_day_cum[uid][i] for uid in per_day_cum) if per_day_cum else 0
+        for uid in per_day_cum:
+            behind[uid].append(per_day_cum[uid][i] - leader)
+
+    chart_data = {
+        "days": [
+            {"puzzle": p, "label": puzzle_date(p, cfg).strftime("%b %-d")}
+            for p in counted_days
+        ],
+        "players": [
+            {
+                "id": e["user_id"],
+                "name": e["name"],
+                "is_you": e["user_id"] == viewer_id,
+                "behind": behind[e["user_id"]],
+            }
+            for e in standings
+        ],
+    }
 
     return render_template(
         "tournaments/detail.html",
@@ -192,6 +232,7 @@ def detail(tournament_id: int):
         viewer_rank=viewer_rank,
         days_complete=days_complete,
         member_count=len(members),
+        chart_data=chart_data,
     )
 
 

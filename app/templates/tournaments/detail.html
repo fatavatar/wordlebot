@@ -208,67 +208,20 @@
 {# ─────────────────────────────────────────────────────────── #}
 {% if puzzle_range %}
 
-{# Part A: Day grid — compact colored cell matrix #}
+{# Part A: "Behind the leader" line chart #}
+{% if chart_data.days|length >= 1 and chart_data.players|length >= 1 %}
 <div style="margin-bottom:24px">
-  <div class="section-label">All Days</div>
-  <div class="day-grid-wrap">
-    <table style="border-collapse:separate;border-spacing:4px;min-width:max-content">
-      <thead>
-        <tr>
-          <th style="text-align:left;padding:4px 12px 4px 4px;font-size:11px;font-weight:700;
-                     letter-spacing:0.06em;text-transform:uppercase;color:var(--t2)">Player</th>
-          {% for pnum in puzzle_range %}
-          <th data-jump="day-{{ pnum }}"
-              style="padding:4px 2px;font-size:10px;color:var(--t3);text-align:center;
-                     min-width:38px;font-weight:700;letter-spacing:0.04em;cursor:pointer"
-              title="Jump to Puzzle #{{ pnum }}">
-            #{{ pnum }}
-          </th>
-          {% endfor %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for entry in standings %}
-        <tr>
-          <td style="padding:4px 12px 4px 4px;font-size:13px;white-space:nowrap;
-                     font-weight:{{ '700' if entry.user_id == g.user.id else '400' }};
-                     color:{{ 'var(--t1)' if entry.user_id == g.user.id else 'var(--t2)' }}">
-            {{ entry.name }}
-          </td>
-          {% for pnum in puzzle_range %}
-            {% set ds = entry.daily_scores.get(pnum, {}) %}
-            {% set g_val = ds.get('guesses') %}
-            {% if visible(entry.user_id, pnum) or entry.user_id == g.user.id %}
-              {% if g_val is none %}
-                <td style="padding:2px;text-align:center">
-                  <div class="day-grid-cell future" title="Not yet submitted"></div>
-                </td>
-              {% else %}
-                <td style="padding:2px;text-align:center">
-                  <div class="day-grid-cell {{ cell_class(g_val) }}"
-                       title="{{ 'MISS' if g_val == 0 else (g_val ~ '/6') }}{{ ' — ' ~ ds.comment if ds.get('comment') else '' }}">
-                    {{ 'M' if g_val == 0 else g_val }}
-                  </div>
-                </td>
-              {% endif %}
-            {% else %}
-              <td style="padding:2px;text-align:center">
-                <div class="day-grid-cell hidden" title="Submit to reveal">—</div>
-              </td>
-            {% endif %}
-          {% endfor %}
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+  <div class="section-label">Behind the Leader</div>
+  <div id="behind-chart" data-chart='{{ chart_data|tojson }}'></div>
+  <div class="behind-note">Cumulative strokes behind the leader — lower is better, a miss counts as 7.</div>
 </div>
+{% endif %}
 
-{# Part B: Per-day accordion — all days including today (censoring via visible()) #}
+{# Part B: Per-day accordion — past days only (today is shown up top) #}
 {% set history_puzzles = puzzle_range|reverse|list %}
 
 {% for pnum in history_puzzles %}
-  {% if true %}
+  {% if pnum != today_puzzle %}
 
   {# collect visible entries for this day #}
   {% set day_entries = [] %}
@@ -279,19 +232,37 @@
     {% endif %}
   {% endfor %}
 
-  <details id="day-{{ pnum }}" style="border:1px solid var(--t5);border-radius:var(--r);margin-bottom:8px;overflow:hidden" open>
-    <summary style="padding:12px 16px;cursor:pointer;display:flex;align-items:center;
-                    justify-content:space-between;background:var(--t6);list-style:none;
+  <details id="day-{{ pnum }}" style="border:1px solid var(--t5);border-radius:var(--r);margin-bottom:8px;overflow:hidden">
+    <summary style="padding:12px 16px;cursor:pointer;background:var(--t6);list-style:none;
                     font-size:13px;font-weight:700;user-select:none">
-      <span>
-        Puzzle <span style="font-family:'Arvo',Georgia,serif">#{{ pnum }}</span>
-        <span style="font-size:11px;font-weight:400;color:var(--t2);margin-left:8px">
-          {{ puzzle_date(pnum).strftime('%B %-d') }}
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span>
+          Puzzle <span style="font-family:'Arvo',Georgia,serif">#{{ pnum }}</span>
+          <span style="font-size:11px;font-weight:400;color:var(--t2);margin-left:8px">
+            {{ puzzle_date(pnum).strftime('%B %-d') }}
+          </span>
         </span>
-      </span>
-      <span style="font-size:11px;font-weight:400;color:var(--t3)">
-        {{ day_entries|length }} of {{ total_members }} submitted
-      </span>
+        <span style="font-size:11px;font-weight:400;color:var(--t3)">
+          {{ day_entries|length }} of {{ total_members }} submitted
+        </span>
+      </div>
+      {% if day_entries %}
+      <div class="day-scores-strip">
+        {% for item in day_entries %}
+          {% set entry = item.entry %}
+          {% set ds = item.ds %}
+          {% set g_val = ds.get('guesses') %}
+          <span class="day-score-chip{% if entry.user_id == g.user.id %} is-you{% endif %}">
+            <span class="dsc-name">{{ entry.name }}</span>
+            {% if item.can_see %}
+              <span class="day-grid-cell dsc-cell {{ cell_class(g_val) }}">{{ 'M' if g_val == 0 else g_val }}</span>
+            {% else %}
+              <span class="day-grid-cell dsc-cell hidden">—</span>
+            {% endif %}
+          </span>
+        {% endfor %}
+      </div>
+      {% endif %}
     </summary>
 
     <div style="padding:12px 16px">
@@ -364,39 +335,180 @@
 
 <script>
 (function() {
-  var wrap = document.querySelector('.day-grid-wrap');
-  if (!wrap) return;
-  var table = wrap.querySelector('table');
-  var headerRow = table.querySelector('thead tr');
+  var host = document.getElementById('behind-chart');
+  if (!host) return;
+  var data = JSON.parse(host.dataset.chart);
+  var days = data.days, players = data.players;
+  if (!days.length || !players.length) return;
 
-  function jumpToDay(colIndex) {
-    var th = headerRow.cells[colIndex];
-    if (!th || !th.dataset.jump) return;
-    var target = document.getElementById(th.dataset.jump);
-    if (!target) return;
-    target.open = true;
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Validated categorical palette (light / dark), assigned in fixed order.
+  var PAL_LIGHT = ['#2a78d6','#008300','#e87ba4','#eda100','#1baf7a','#eb6834','#4a3aa7','#e34948'];
+  var PAL_DARK  = ['#3987e5','#008300','#d55181','#c98500','#199e70','#d95926','#9085e9','#e66767'];
+  var DASHES = ['none','6 4','2 4','8 3 2 3'];  // composite encoding past 8 players
+  function isDark() { return document.body.classList.contains('dark'); }
+  function colorFor(i) { return (isDark() ? PAL_DARK : PAL_LIGHT)[i % 8]; }
+  function dashFor(i) { return DASHES[Math.floor(i / 8) % DASHES.length]; }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function(c) {
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs) {
+    var e = document.createElementNS(SVGNS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
   }
 
-  // header: click + hover highlight
-  Array.from(headerRow.cells).forEach(function(th, i) {
-    if (!th.dataset.jump) return;
-    th.addEventListener('click', function() { jumpToDay(i); });
-    th.addEventListener('mouseenter', function() { this.style.color = 'var(--t1)'; });
-    th.addEventListener('mouseleave', function() { this.style.color = 'var(--t3)'; });
-  });
+  // legend + tooltip scaffolding
+  var legend = document.createElement('div');
+  legend.className = 'behind-legend';
+  host.after(legend);
+  var tip = document.createElement('div');
+  tip.className = 'behind-tip';
+  tip.style.display = 'none';
+  host.style.position = 'relative';
+  host.appendChild(tip);
 
-  // body cells: cursor + click via delegation
-  table.querySelectorAll('tbody td:not(:first-child)').forEach(function(td) {
-    td.style.cursor = 'pointer';
-  });
-  table.querySelector('tbody').addEventListener('click', function(e) {
-    var td = e.target.closest('td');
-    if (!td) return;
-    var colIndex = Array.from(td.parentNode.cells).indexOf(td);
-    if (colIndex === 0) return;
-    jumpToDay(colIndex);
-  });
+  function render() {
+    var startIdx = 0;
+    var xdays = days;
+    var n = xdays.length;
+
+    var W = host.clientWidth || 640;
+    var H = 260;
+    var padL = 34, padR = 14, padT = 14, padB = 26;
+    var plotW = Math.max(10, W - padL - padR);
+    var plotH = H - padT - padB;
+
+    // y-domain: 0 (leader) at top, growing downward
+    var maxBehind = 0;
+    players.forEach(function(p) {
+      p.behind.slice(startIdx).forEach(function(v) { if (v > maxBehind) maxBehind = v; });
+    });
+    if (maxBehind < 1) maxBehind = 1;
+
+    var x = function(i) { return padL + (n <= 1 ? plotW / 2 : (i / (n - 1)) * plotW); };
+    var y = function(v) { return padT + (v / maxBehind) * plotH; };
+
+    var ink = isDark() ? '#c3c2b7' : '#52514e';
+    var grid = isDark() ? '#33332f' : '#eceae4';
+
+    // Clear
+    while (host.firstChild) { if (host.firstChild === tip) break; host.removeChild(host.firstChild); }
+    // remove any leftover svg but keep tip
+    Array.prototype.slice.call(host.querySelectorAll('svg')).forEach(function(s){ s.remove(); });
+
+    var svg = el('svg', { width: W, height: H, viewBox: '0 0 ' + W + ' ' + H, class: 'behind-svg' });
+
+    // y gridlines + labels (a few ticks)
+    var ticks = 4;
+    for (var t = 0; t <= ticks; t++) {
+      var val = Math.round((maxBehind / ticks) * t);
+      var yy = y(val);
+      svg.appendChild(el('line', { x1: padL, y1: yy, x2: padL + plotW, y2: yy,
+        stroke: grid, 'stroke-width': 1 }));
+      var lbl = el('text', { x: padL - 6, y: yy + 3, 'text-anchor': 'end',
+        'font-size': 10, fill: ink });
+      lbl.textContent = String(val);
+      svg.appendChild(lbl);
+    }
+
+    // x labels (first, last, and a middle one to avoid crowding)
+    var xlabelIdx = n <= 6 ? xdays.map(function(_, i){ return i; })
+                           : [0, Math.floor((n - 1) / 2), n - 1];
+    xlabelIdx.forEach(function(i) {
+      var tx = el('text', { x: x(i), y: H - 8, 'text-anchor': 'middle',
+        'font-size': 10, fill: ink });
+      tx.textContent = xdays[i].label;
+      svg.appendChild(tx);
+    });
+
+    // lines
+    players.forEach(function(p, pi) {
+      var vals = p.behind.slice(startIdx);
+      var d = '';
+      vals.forEach(function(v, i) { d += (i ? ' L' : 'M') + x(i) + ' ' + y(v); });
+      svg.appendChild(el('path', { d: d, fill: 'none', stroke: colorFor(pi),
+        'stroke-width': p.is_you ? 3 : 2, 'stroke-dasharray': dashFor(pi),
+        'stroke-linejoin': 'round', 'stroke-linecap': 'round',
+        opacity: 0.95 }));
+    });
+
+    // crosshair + hover dots (created empty, moved on hover)
+    var cross = el('line', { y1: padT, y2: padT + plotH, stroke: ink,
+      'stroke-width': 1, opacity: 0, 'stroke-dasharray': '3 3' });
+    svg.appendChild(cross);
+    var dots = players.map(function(p, pi) {
+      var c = el('circle', { r: 3.5, fill: colorFor(pi), stroke: isDark() ? '#1a1a19' : '#fff',
+        'stroke-width': 1.5, opacity: 0 });
+      svg.appendChild(c);
+      return c;
+    });
+
+    var hit = el('rect', { x: padL, y: 0, width: plotW, height: H, fill: 'transparent' });
+    svg.appendChild(hit);
+
+    function nearestIndex(px) {
+      if (n <= 1) return 0;
+      var i = Math.round(((px - padL) / plotW) * (n - 1));
+      return Math.max(0, Math.min(n - 1, i));
+    }
+    hit.addEventListener('mousemove', function(ev) {
+      var rect = svg.getBoundingClientRect();
+      var px = (ev.clientX - rect.left) * (W / rect.width);
+      var i = nearestIndex(px);
+      cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i));
+      cross.setAttribute('opacity', 0.5);
+      var rows = players.map(function(p, pi) {
+        var v = p.behind.slice(startIdx)[i];
+        dots[pi].setAttribute('cx', x(i)); dots[pi].setAttribute('cy', y(v));
+        dots[pi].setAttribute('opacity', 1);
+        return { name: p.name, v: v, c: colorFor(pi), you: p.is_you };
+      }).sort(function(a, b) { return a.v - b.v; });
+      var html = '<div class="bt-day">' + esc(xdays[i].label) + '</div>';
+      rows.forEach(function(r) {
+        html += '<div class="bt-row"><span class="bt-sw" style="background:' + r.c + '"></span>'
+          + '<span class="bt-nm' + (r.you ? ' you' : '') + '">' + esc(r.name) + '</span>'
+          + '<span class="bt-v">' + (r.v === 0 ? 'lead' : '+' + r.v) + '</span></div>';
+      });
+      tip.innerHTML = html;
+      tip.style.display = 'block';
+      var tw = tip.offsetWidth;
+      var left = x(i) / (W / rect.width) + 12;
+      if (left + tw > rect.width) left = x(i) / (W / rect.width) - tw - 12;
+      tip.style.left = Math.max(0, left) + 'px';
+      tip.style.top = '8px';
+    });
+    hit.addEventListener('mouseleave', function() {
+      cross.setAttribute('opacity', 0);
+      dots.forEach(function(d) { d.setAttribute('opacity', 0); });
+      tip.style.display = 'none';
+    });
+
+    host.insertBefore(svg, tip);
+
+    // legend
+    legend.innerHTML = '';
+    players.forEach(function(p, pi) {
+      var chip = document.createElement('span');
+      chip.className = 'behind-lg' + (p.is_you ? ' you' : '');
+      var sw = document.createElement('span');
+      sw.className = 'behind-lg-sw';
+      sw.style.background = colorFor(pi);
+      if (dashFor(pi) !== 'none') sw.style.backgroundImage =
+        'repeating-linear-gradient(90deg,' + colorFor(pi) + ' 0 4px, transparent 4px 6px)';
+      chip.appendChild(sw);
+      chip.appendChild(document.createTextNode(p.name));
+      legend.appendChild(chip);
+    });
+  }
+
+  render();
+  window.addEventListener('resize', render);
+  // Re-render on theme toggle (body.dark class changes)
+  new MutationObserver(render).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 })();
 </script>
 

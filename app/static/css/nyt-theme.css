@@ -542,6 +542,119 @@ hr { border: none; border-top: 1px solid var(--t4); margin: 32px 0; }
 .day-grid-cell.hidden      { background: var(--t5); color: var(--t3); font-size: 17px; }
 .day-grid-cell.future      { background: transparent; border: 1px dashed var(--t4); }
 
+/* ── Collapsed day score strip (in accordion summary) ───────── */
+.day-scores-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+/* When the day is expanded, the full cards show below — hide the strip. */
+details[open] .day-scores-strip { display: none; }
+
+.day-score-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--t6);
+  border: 1px solid var(--t5);
+  border-radius: 4px;
+  padding: 2px 5px 2px 8px;
+}
+.day-score-chip .dsc-name {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--t2);
+  white-space: nowrap;
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.day-score-chip.is-you .dsc-name { color: var(--t1); font-weight: 700; }
+
+.day-grid-cell.dsc-cell {
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
+}
+
+/* ── "Behind the leader" chart ──────────────────────────────── */
+
+#behind-chart { width: 100%; }
+.behind-svg { display: block; width: 100%; height: auto; }
+
+.behind-note {
+  font-size: 11px;
+  color: var(--t3);
+  margin-top: 4px;
+}
+
+.behind-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 8px;
+}
+.behind-lg {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--t2);
+}
+.behind-lg.you { color: var(--t1); font-weight: 700; }
+.behind-lg-sw {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.behind-tip {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+  background: var(--bg);
+  border: 1px solid var(--t4);
+  border-radius: 6px;
+  padding: 7px 9px;
+  font-size: 12px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  min-width: 120px;
+  max-width: 220px;
+}
+.behind-tip .bt-day {
+  font-weight: 700;
+  color: var(--t1);
+  margin-bottom: 5px;
+  font-size: 11px;
+}
+.behind-tip .bt-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.5;
+}
+.behind-tip .bt-sw {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.behind-tip .bt-nm {
+  color: var(--t2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+.behind-tip .bt-nm.you { color: var(--t1); font-weight: 700; }
+.behind-tip .bt-v {
+  color: var(--t1);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ── Leaderboard ────────────────────────────────────────────── */
 .leaderboard { width: 100%; border-collapse: collapse; }
 
